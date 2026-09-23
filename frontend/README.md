@@ -1,13 +1,13 @@
 # HackAlem frontend
 
-Один React/Vite/TypeScript экран для сценария `очередь → выбранный узел → направленный ego-граф → dossier`.
+Один React/Vite/TypeScript экран для сценария `вопрос Investigator → проверяемые факты → узел/граф`, сохраняя очередь, поиск и dossier.
 
 ## Фактически проверенные команды
 
 Из этой директории:
 
 ```powershell
-npm.cmd install
+npm.cmd ci
 npm.cmd run dev
 npm.cmd run build
 npm.cmd run preview
@@ -18,6 +18,8 @@ npm.cmd run preview
 ## Текущий режим
 
 По умолчанию приложение использует `HttpDataProvider` и реальный локальный snapshot API. Для учебного режима установить `VITE_DATA_PROVIDER=fixture` перед сборкой или запуском Vite. В этом режиме шесть синтетических fixture-узлов явно помечены «Учебные данные» и не выдаются за исходную сеть.
+
+В live-режиме вопрос Investigator можно отправить по всей наблюдаемой сети или с выбранным gid как контекстом. Форма вызывает `POST /api/investigate` по transport v1 и показывает loading, completed, empty, unavailable, timeout и failed отдельно. В завершённом ответе отображаются findings, числовые evidence facts, ограничения, следующие проверки и фактически выполненные tool calls; gid открывает существующую карточку и граф. В шапке доступны три CSV через `/api/export/{filename}`. UI не создаёт AI-ответов в fixture mode.
 
 Проверяемые сценарии:
 

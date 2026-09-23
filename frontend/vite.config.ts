@@ -17,8 +17,7 @@ export default defineConfig({
       allow: [fileURLToPath(new URL('..', import.meta.url))],
     },
     proxy: {
-      // Future API integration point: start FastAPI on :8000 and run
-      // VITE_DATA_PROVIDER=http npm run dev
+      // Live API integration: start FastAPI on :8000, then run npm run dev.
       '/api': { target: 'http://127.0.0.1:8000', changeOrigin: true },
     },
   },

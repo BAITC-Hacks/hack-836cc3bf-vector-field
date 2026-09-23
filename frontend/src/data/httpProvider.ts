@@ -1,10 +1,4 @@
-/** HTTP data provider — contract v1 routes from docs/API_CONTRACT.md.
- *
- * Not wired in by default: the stage runs on fixtures. Point the app at the
- * backend with:
- *   VITE_DATA_PROVIDER=http npm run dev
- * Components consume the same DataProvider interface, so nothing else changes.
- */
+/** Default live HTTP data provider — contract v1 routes from docs/API_CONTRACT.md. */
 import type {
   ClustersResponse,
   EntityListResponse,

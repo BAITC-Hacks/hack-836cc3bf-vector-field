@@ -131,6 +131,8 @@ export default function App() {
         </section>
 
         <aside className="right-column">
+          <InvestigatorPanel mode={provider.mode} selectedGid={selectedGid} onSelect={selectGid}
+            snapshotId={summary.status === 'ready' ? summary.data.meta.snapshot_id : null} />
           <section className="panel dossier-panel">
             <div className="panel-head">
               <h2 className="panel-title">Dossier</h2>
@@ -138,8 +140,6 @@ export default function App() {
             </div>
             <Dossier state={entity} />
           </section>
-          <InvestigatorPanel mode={provider.mode} selectedGid={selectedGid}
-            snapshotId={summary.status === 'ready' ? summary.data.meta.snapshot_id : null} />
         </aside>
       </main>
 

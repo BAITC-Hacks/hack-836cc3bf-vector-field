@@ -21,6 +21,8 @@ interface Props {
   providerMode: 'fixture' | 'live'
 }
 
+const API_BASE = (import.meta.env.VITE_API_BASE ?? '').replace(/\/+$/, '')
+
 export function BriefHeader({ state, providerMode }: Props) {
   if (state.status === 'loading' || state.status === 'idle') {
     return (
@@ -46,6 +48,19 @@ export function BriefHeader({ state, providerMode }: Props) {
         <h1>Очередь проверки финансовой сети</h1>
         {synthetic ? <span className="badge badge-training">Учебные данные</span> : null}
         <span className="badge badge-mode">{providerMode === 'fixture' ? 'provider: fixture' : 'provider: live'}</span>
+        {providerMode === 'live' ? (
+          <div className="brief-actions">
+            <details className="export-menu">
+              <summary className="btn">Экспорт CSV</summary>
+              <div className="export-menu-items">
+                <a href={`${API_BASE}/api/export/top_nodes.csv`}>Топ узлов</a>
+                <a href={`${API_BASE}/api/export/nodes_roles.csv`}>Роли всех узлов</a>
+                <a href={`${API_BASE}/api/export/clusters.csv`}>Кластеры</a>
+              </div>
+            </details>
+            <a className="btn btn-investigator-link" href="#investigator-question">Спросить Investigator</a>
+          </div>
+        ) : null}
       </div>
 
       <p className="brief-caption">

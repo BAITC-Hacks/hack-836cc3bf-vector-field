@@ -15,7 +15,8 @@ const PRIORITY_FEATURE_LABELS: Record<string, string> = {
   priority_component_out_degree: 'исходящая степень',
 }
 
-const ROLE_DECOMPOSITION_METRICS = ['role_signal_strength', 'role_support_multiplier', 'role_score_cap']
+// role_score_cap is conditional: the pipeline emits it only for a single observed transaction.
+const ROLE_DECOMPOSITION_METRICS = ['role_signal_strength', 'role_support_multiplier']
 
 function featureLabel(metric: string): string {
   return PRIORITY_FEATURE_LABELS[metric] ?? metric
@@ -142,7 +143,7 @@ export function Dossier({ state }: Props) {
         ) : null}
 
         {roleFacts.length === 0 ? (
-          <p className="no-data">Fixture не содержит фактов роли — данные отсутствуют, в UI не воссозданы.</p>
+          <p className="no-data">Детальные основания роли не переданы. Оценка из snapshot не пересчитывается в интерфейсе.</p>
         ) : (
           <ul className="fact-list">
             {roleFacts.map((fact) => (
@@ -161,8 +162,7 @@ export function Dossier({ state }: Props) {
 
         {missingDecomposition.length > 0 ? (
           <p className="no-data">
-            В fixture отсутствуют {missingDecomposition.join(', ')} — разложение role_score недоступно. Значения не
-            вычисляются в React.
+            Для разложения role_score не переданы {missingDecomposition.join(', ')}. Интерфейс не восполняет эти значения.
           </p>
         ) : null}
       </Section>
@@ -184,8 +184,7 @@ export function Dossier({ state }: Props) {
 
         {priorityFacts.length === 0 ? (
           <p className="no-data">
-            В fixture нет вкладов с <code>rule_id=priority_v0</code>. Данные отсутствуют — сумма вкладов не
-            рассчитывается и не придумывается, показан только текст <code>why</code> из контракта.
+            Вклады приоритета не переданы. Показаны оценка и объяснение из snapshot; разложение не восстанавливается в интерфейсе.
           </p>
         ) : (
           <>
@@ -308,9 +307,10 @@ export function Dossier({ state }: Props) {
             </table>
           </div>
         )}
-        <p className="hint">
-          evidence_id: {entity.evidence.map((fact) => fact.evidence_id).join(' · ') || '—'}
-        </p>
+        <details className="evidence-ids">
+          <summary>ID фактов для проверки</summary>
+          <p>{entity.evidence.map((fact) => fact.evidence_id).join(' · ') || '—'}</p>
+        </details>
       </Section>
 
       {/* ── 5. Ограничения ─────────────────────────────────────────────── */}
