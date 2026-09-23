@@ -97,7 +97,10 @@ def common_recipient_evidence(response: Mapping[str, Any]) -> list[dict[str, Any
 
         source_list = ";".join(selected)
         recipient_fact = {
-            "evidence_id": _path_id("common", snapshot_id, recipient, [selected, by_source]),
+            "evidence_id": _path_id(
+                "common", snapshot_id, recipient,
+                [[source, by_source[source]] for source in selected],
+            ),
             "gid": recipient,
             "metric": "common_recipient_sources",
             "value": source_list,
