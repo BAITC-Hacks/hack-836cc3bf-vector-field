@@ -51,6 +51,15 @@ class ToolSession:
     def results(self) -> list[dict[str, Any]]:
         return deepcopy(self._results)
 
+    @staticmethod
+    def evidence_for_result(name: str, result: Mapping[str, Any]) -> list[dict[str, Any]]:
+        """Facts exposed to the model alongside a bounded tool result."""
+        if name == "get_entity_profile":
+            return deepcopy(result["entity"]["evidence"])
+        if name == "find_common_recipients":
+            return common_recipient_evidence(result)
+        return []
+
     def remaining_seconds(self) -> float:
         return max(0.0, self._deadline - monotonic())
 

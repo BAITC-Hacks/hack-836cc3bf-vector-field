@@ -4,7 +4,6 @@ import unittest
 
 from agent import FinalAction, FixtureProvider, ToolAction, investigate
 from agent.boundary import ToolLimits
-from agent.evidence import common_recipient_evidence
 from agent.session import SnapshotMismatch
 
 
@@ -20,7 +19,7 @@ class ProfileModel:
         if not observations:
             return ToolAction("get_entity_profile", {"gid": request["selected_gids"][0]})
         entity = observations[0]["result"]["entity"]
-        fact = entity["evidence"][0]
+        fact = observations[0]["evidence"][0]
         return FinalAction(
             findings=[{
                 "text": "Наблюдается несколько входящих связей.",
@@ -74,7 +73,7 @@ class PathModel:
                 "gids": ["900000000000000002", "900000000000000003"],
                 "max_hops": 1, "limit": 50,
             })
-        facts = common_recipient_evidence(observations[0]["result"])
+        facts = observations[0]["evidence"]
         return FinalAction(
             findings=[{
                 "text": "Модель могла написать неподтверждённый вывод.",

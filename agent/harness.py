@@ -113,6 +113,7 @@ async def investigate(
                     "name": action.name,
                     "arguments": dict(action.arguments),
                     "result": result,
+                    "evidence": session.evidence_for_result(action.name, result),
                 })
                 continue
             if isinstance(action, FinalAction):
