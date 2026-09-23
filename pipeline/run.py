@@ -291,9 +291,9 @@ def analyze(nodes: pd.DataFrame, edges: pd.DataFrame, tx: pd.DataFrame) -> Analy
             secondary = []
             signal = role_score
             support = 1.0
-        components = {name: weight * p[name][gid] for name, weight in cfg.PRIORITY_WEIGHTS.items()}
-        priority = sum(components.values())
-        if not math.isclose(sum(components.values()), priority, rel_tol=0, abs_tol=1e-9):
+        priority_parts = {name: weight * p[name][gid] for name, weight in cfg.PRIORITY_WEIGHTS.items()}
+        priority = sum(priority_parts.values())
+        if not math.isclose(sum(priority_parts.values()), priority, rel_tol=0, abs_tol=1e-9):
             raise DataError("priority component sum mismatch")
         limitations = ["inflow_incomplete", "date_only", "period_censored", "threshold_5000", "intrabank_only"]
         if is_seed:
@@ -326,7 +326,7 @@ def analyze(nodes: pd.DataFrame, edges: pd.DataFrame, tx: pd.DataFrame) -> Analy
         if m["in_tx"] + m["out_tx"] == 1 and scored:
             evidence.append(fact(gid, "role_score_cap", cfg.SINGLE_TX_CAP, "ratio", rule_id, "derived", "Одна наблюдаемая транзакция ограничивает оценку роли", limitations))
         for name in cfg.PRIORITY_WEIGHTS:
-            value = components[name]
+            value = priority_parts[name]
             evidence.append(fact(gid, f"priority_component_{name}", value, "ratio", "priority_v0", "derived", f"Вклад {name}: {value:.9f}", limitations))
         if role == "consolidator":
             short = f"{m['in_degree']} плательщиков, {m['in_tx']} входящих tx, вход {kzt(m['in_cents'])} KZT; признаки консолидации, вход неполон"
@@ -342,7 +342,7 @@ def analyze(nodes: pd.DataFrame, edges: pd.DataFrame, tx: pd.DataFrame) -> Analy
             short = f"Недостаточно признаков: вход {m['in_degree']} gid, выход {m['out_degree']} gid, depth={depth}; наблюдение ограничено"
         if len(short) > 200:
             raise DataError(f"role evidence too long for {gid}")
-        top_parts = sorted(components.items(), key=lambda item: (-item[1], item[0]))[:3]
+        top_parts = sorted(priority_parts.items(), key=lambda item: (-item[1], item[0]))[:3]
         why = (f"Приоритет {priority:.6f}: крупнейшие вклады " + ", ".join(f"{name}={value:.4f}" for name, value in top_parts)
                + f"; seed-отправителей {m['direct_seed_senders']}, достижим от {m['seed_reach_4']} seed, вход {m['in_degree']} gid, выход {m['out_degree']} gid. Вход неполон.")
         profiles[gid] = {
@@ -358,7 +358,7 @@ def analyze(nodes: pd.DataFrame, edges: pd.DataFrame, tx: pd.DataFrame) -> Analy
             },
             "evidence": evidence, "secondary_roles": secondary,
             "limitations": limitations, "next_checks": next_checks,
-            "priority_components": components,
+            "priority_components": priority_parts,
         }
     ranked = sorted(profiles, key=lambda gid: (-profiles[gid]["priority_score"], gid))
     clusters = []
