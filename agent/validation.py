@@ -9,6 +9,7 @@ import json
 from typing import Any, Collection, Mapping, Sequence
 
 from .boundary import LIMITS, require_gid
+from .evidence import common_recipient_evidence
 
 
 class ValidationError(ValueError):
@@ -116,6 +117,17 @@ def validate_investigation_response(
             global_limitations.add("subgraph_truncated")
         if "selected_gids" in tool_result and "mode" in tool_result:
             global_limitations.update(_strings(tool_result.get("limitations"), "tool limitations"))
+            try:
+                derived = common_recipient_evidence(tool_result)
+            except ValueError as error:
+                raise ValidationError(f"invalid trusted common-recipient result: {error}") from error
+            for fact in derived:
+                if fact["gid"] not in known_gids:
+                    _fail("common-recipient evidence gid absent from snapshot")
+                evidence_id = fact["evidence_id"]
+                if evidence_id in facts and not _same_json(facts[evidence_id], fact):
+                    _fail("conflicting trusted evidence_id")
+                facts[evidence_id] = fact
 
     status = result.get("status")
     if status not in {"completed", "unavailable", "timeout", "failed"}:
