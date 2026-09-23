@@ -133,9 +133,16 @@ class OpenAIModelTests(unittest.TestCase):
             self.assertIsNone(model_from_environment())
 
     def test_accusation_in_model_prose_is_rejected(self):
-        result = self.run_question(FakeResponses(text="Это доказанное мошенничество."))
-        self.assertEqual(result["status"], "failed")
-        self.assertEqual(result["findings"], [])
+        for text in (
+            "Это доказанное мошенничество.",
+            "Наблюдаемые признаки не доказывают виновность.",
+            "Приоритет не является вероятностью преступления.",
+        ):
+            with self.subTest(text=text):
+                result = self.run_question(FakeResponses(text=text))
+                self.assertEqual(result["status"], "failed")
+                self.assertEqual(result["findings"], [])
+                self.assertEqual(result["evidence"], [])
         numeric = self.run_question(FakeResponses(text="Вероятность преступления 87%."))
         self.assertEqual(numeric["status"], "failed")
 
