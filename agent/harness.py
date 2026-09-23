@@ -6,12 +6,31 @@ model steps while the backend snapshot and live provider are unfinished.
 
 import asyncio
 from dataclasses import dataclass
+import re
 from typing import Any, Collection, Mapping, Protocol, Sequence
 
 from .boundary import InvestigatorTools, LIMITS, ToolLimits
 from .session import ToolSession
 
 PATH_NEXT_CHECK = "Запросить точное время переводов и подтверждение связи операций."
+UNSUPPORTED_CLAIM = re.compile(
+    r"преступ|мошенн|винов|отмыв|обналич|вероят|риск|"
+    r"управля|контролиру|организатор|"
+    r"\b(?:criminal|fraud|guilty|launder|cash[ -]?out|probab\w*|risk)\b",
+    re.IGNORECASE,
+)
+
+
+class ModelUnavailableError(RuntimeError):
+    """The configured model cannot be used with the current credentials."""
+
+
+class ModelProviderError(RuntimeError):
+    """A provider request failed without exposing provider details to the user."""
+
+
+class ModelProtocolError(RuntimeError):
+    """The provider returned an invalid tool or final response."""
 
 
 def _finding_text(finding: Mapping[str, Any], evidence: Sequence[Mapping[str, Any]]) -> str:
@@ -23,6 +42,28 @@ def _finding_text(finding: Mapping[str, Any], evidence: Sequence[Mapping[str, An
     if any(isinstance(metric, str) and metric.startswith("priority_component_") for metric in metrics):
         return "Узел включён в очередь проверки по рассчитанным признакам приоритета."
     return "Для узла приведены наблюдаемые признаки; вывод о роли требует дополнительной проверки."
+
+
+def _model_finding_text(finding: Mapping[str, Any], evidence: Sequence[Mapping[str, Any]]) -> str:
+    """Allow model wording only with verified citations and basic claim guardrails."""
+    value = finding.get("text")
+    if not isinstance(value, str):
+        raise ModelProtocolError("finding text must be a string")
+    value = " ".join(value.split())
+    if not 1 <= len(value) <= 350 or any(char.isdigit() for char in value):
+        raise ModelProtocolError("finding text is empty, too long or contains numbers")
+    if UNSUPPORTED_CLAIM.search(value):
+        raise ModelProtocolError("finding text contains an unsupported claim")
+    cited = set(finding.get("evidence_ids", []))
+    if not cited:
+        raise ModelProtocolError("finding has no evidence citation")
+    if "приоритет" in value.casefold() and not any(
+        fact.get("evidence_id") in cited
+        and str(fact.get("metric", "")).startswith("priority_component_")
+        for fact in evidence
+    ):
+        raise ModelProtocolError("priority claim lacks a priority fact")
+    return value
 
 
 def _trusted_next_checks(session: ToolSession, proposed: Sequence[str]) -> list[str]:
@@ -48,6 +89,7 @@ class FinalAction:
     evidence: Sequence[Mapping[str, Any]]
     limitations: Sequence[str]
     next_checks: Sequence[str]
+    model_text: bool = False
 
 
 class InvestigatorModel(Protocol):
@@ -108,7 +150,12 @@ async def investigate(
                 model.next_step(clean_request, tuple(observations)), timeout=remaining
             )
             if isinstance(action, ToolAction):
-                result = await session.call(action.name, action.arguments)
+                try:
+                    result = await session.call(action.name, action.arguments)
+                except LookupError:
+                    return _failure(session, "failed", "Запрошенный моделью gid не найден.")
+                except ValueError:
+                    return _failure(session, "failed", "Параметры инструмента некорректны.")
                 observations.append({
                     "name": action.name,
                     "arguments": dict(action.arguments),
@@ -119,13 +166,26 @@ async def investigate(
             if isinstance(action, FinalAction):
                 evidence = [dict(fact) for fact in action.evidence]
                 findings = [
-                    {**dict(finding), "text": _finding_text(finding, evidence)}
+                    {**dict(finding), "text": (
+                        _model_finding_text(finding, evidence) if action.model_text
+                        else _finding_text(finding, evidence)
+                    )}
                     for finding in action.findings
                 ]
+                message = "Гипотезы основаны на проверенных фактах snapshot."
+                if not findings:
+                    if any(
+                        observation["name"] == "find_common_recipients"
+                        and not observation["result"].get("items")
+                        for observation in observations
+                    ):
+                        message = "В заданных пределах общие получатели не найдены."
+                    else:
+                        message = "Доступных подтверждённых фактов для ответа недостаточно."
                 candidate = {
                     "meta": session.meta,
                     "status": "completed",
-                    "message": "Гипотезы основаны на проверенных фактах snapshot.",
+                    "message": message,
                     "findings": findings,
                     "evidence": evidence,
                     "limitations": list(action.limitations),
@@ -137,5 +197,11 @@ async def investigate(
         return _failure(session, "failed", "Превышен лимит вызовов инструментов.")
     except (asyncio.TimeoutError, TimeoutError):
         return _failure(session, "timeout", "Investigator превысил лимит времени.")
+    except ModelUnavailableError:
+        return _failure(session, "unavailable", "Модель Investigator недоступна.")
+    except ModelProviderError:
+        return _failure(session, "failed", "Провайдер модели не ответил корректно.")
+    except ModelProtocolError:
+        return _failure(session, "failed", "Ответ модели или вызов инструмента некорректен.")
     except Exception:
         return _failure(session, "failed", "Ответ Investigator не прошёл проверку.")
