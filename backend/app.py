@@ -11,6 +11,7 @@ from fastapi.responses import FileResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 
 from agent import investigate
+from agent.openai_model import model_from_environment
 from agent.session import SnapshotMismatch
 from pipeline.run import CSV_COLUMNS, DEFAULT_OUT
 
@@ -109,4 +110,4 @@ def create_app(*, snapshot_path: Path | None = None, service: SnapshotService | 
     return app
 
 
-app = create_app()
+app = create_app(model=model_from_environment())
