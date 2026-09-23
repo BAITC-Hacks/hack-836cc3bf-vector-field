@@ -2,6 +2,7 @@ import type { FormEvent, ReactNode } from 'react'
 import type { Gid } from '@shared/contracts'
 
 interface Props {
+  mode: 'fixture' | 'live'
   value: string
   onValueChange(value: string): void
   onSearch(gid: Gid): void
@@ -11,7 +12,7 @@ interface Props {
 
 /** Exact gid lookup. The value is treated as an opaque decimal string:
  *  no Number(), no parseInt(), no trimming beyond whitespace. */
-export function SearchBox({ value, onValueChange, onSearch, validationError, feedback }: Props) {
+export function SearchBox({ mode, value, onValueChange, onSearch, validationError, feedback }: Props) {
   function submit(event: FormEvent) {
     event.preventDefault()
     const gid = value.trim()
@@ -30,7 +31,7 @@ export function SearchBox({ value, onValueChange, onSearch, validationError, fee
           className="search-input"
           value={value}
           onChange={(event) => onValueChange(event.target.value)}
-          placeholder="точный gid, например 900000000000000001"
+          placeholder={mode === 'fixture' ? 'точный gid, например 900000000000000001' : 'введите полный gid из snapshot'}
           spellCheck={false}
           autoComplete="off"
           inputMode="numeric"
@@ -41,8 +42,8 @@ export function SearchBox({ value, onValueChange, onSearch, validationError, fee
         </button>
       </form>
       <p className="hint">
-        Только точное совпадение по полному gid — строке из десятичных цифр. Сейчас доступна fixture-коллекция;
-        полный dataset станет доступен после подключения <code>GET /api/entities/{'{gid}'}</code>.
+        Только точное совпадение по полному gid — строке из десятичных цифр.
+        {mode === 'live' ? ' Поиск идёт по всем узлам snapshot.' : ' Доступна учебная fixture-коллекция.'}
       </p>
       {validationError ? <p className="field-error">{validationError}</p> : null}
       {feedback}

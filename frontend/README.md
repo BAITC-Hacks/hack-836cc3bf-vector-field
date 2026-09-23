@@ -17,7 +17,7 @@ npm.cmd run preview
 
 ## Текущий режим
 
-По умолчанию приложение использует `FixtureDataProvider` и `shared/fixtures.json` — общий синтетический transport fixture v1. В интерфейсе явно отображается **«Учебные данные»**. Шесть fixture-узлов не расширяются выдуманным top-20 и не выдаются за исходную сеть из Parquet.
+По умолчанию приложение использует `HttpDataProvider` и реальный локальный snapshot API. Для учебного режима установить `VITE_DATA_PROVIDER=fixture` перед сборкой или запуском Vite. В этом режиме шесть синтетических fixture-узлов явно помечены «Учебные данные» и не выдаются за исходную сеть.
 
 Проверяемые сценарии:
 
@@ -32,12 +32,11 @@ npm.cmd run preview
 
 ## Архитектура provider
 
-Компоненты зависят от `DataProvider` в `src/data/provider.ts`. Сейчас подключён `FixtureDataProvider`; готов `HttpDataProvider` с теми же методами и именами полей.
+Компоненты зависят от `DataProvider` в `src/data/provider.ts`; live и fixture реализации используют одни имена полей.
 
-Для запуска через будущий backend:
+Для разработки с live backend:
 
 ```powershell
-$env:VITE_DATA_PROVIDER="http"
 $env:VITE_API_BASE=""
 npm.cmd run dev
 ```
@@ -50,10 +49,10 @@ Vite проксирует `/api` на `http://127.0.0.1:8000`. Нужны routes
 - `GET /api/subgraph?gid=&hops=&limit=`
 - `GET /api/clusters`
 
-Следующий этап — заменить fixture snapshot на live snapshot/API. Компоненты и transport-типы менять не требуется.
+В собранном режиме FastAPI раздаёт `frontend/dist` вместе с `/api`; `GET /api/summary` и остальные routes используют `pipeline/out/snapshot.json`. Панель Investigator отображает `unavailable` при отсутствии model adapter, не скрывая core.
 
 ## Ограничения
 
-- Пока это fixture-stage, не production analysis и не результат расчёта по исходным Parquet.
-- Фактический backend, pipeline, CSV и Investigator находятся вне frontend scope.
-- Визуальная проверка браузером должна выполняться после `npm.cmd run dev`; build/typecheck — автоматическая проверка проекта.
+- Без предварительного запуска pipeline live API вернёт `SNAPSHOT_NOT_READY`.
+- Реальная модель Investigator пока не подключена; её status отображается честно.
+- На Windows в этой сессии сборка прошла на Node 22.11 с предупреждением Vite о требовании 22.12+; `npm ci` пропустил optional Windows binding Rolldown, поэтому его пришлось доустановить в локальный `node_modules` командой `npm.cmd install --no-save --no-package-lock @rolldown/binding-win32-x64-msvc@1.2.9`. Эта команда не меняет lockfile.

@@ -449,6 +449,8 @@ def main() -> None:
         nodes, edges, tx = load_and_validate(args.data)
         result = analyze(nodes, edges, tx)
         export_csv(result, args.out)
+        from .snapshot import export_snapshot
+        export_snapshot(result, nodes, edges, args.data, args.out)
     except DataError as exc:
         parser.exit(2, f"Input/analysis error: {exc}\n")
     elapsed = time.perf_counter() - started
@@ -459,7 +461,7 @@ def main() -> None:
         "n_clusters": len(result.clusters),
         "roles": dict(sorted(Counter(p["role"] for p in result.profiles.values()).items())),
         "elapsed_seconds": round(elapsed, 3),
-        "outputs": [str(args.out / name) for name in CSV_COLUMNS],
+        "outputs": [str(args.out / name) for name in CSV_COLUMNS] + [str(args.out / "snapshot.json")],
     }, ensure_ascii=False, indent=2))
 
 

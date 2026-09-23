@@ -11,7 +11,7 @@ export { useAsyncData, type Async } from './useAsyncData'
 /** Single switch between the fixture stage and the future API stage.
  *  Components never import a concrete provider — they take this instance. */
 export function createDataProvider(): DataProvider {
-  return import.meta.env.VITE_DATA_PROVIDER === 'http'
-    ? new HttpDataProvider()
-    : new FixtureDataProvider()
+  return import.meta.env.VITE_DATA_PROVIDER === 'fixture'
+    ? new FixtureDataProvider()
+    : new HttpDataProvider()
 }

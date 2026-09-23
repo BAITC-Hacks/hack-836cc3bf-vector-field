@@ -106,6 +106,7 @@ export function GraphPanel({ state, onSelect, subgraphLimit, onSubgraphLimit }: 
   const cyRef = useRef<cytoscape.Core | null>(null)
   const onSelectRef = useRef(onSelect)
   const [hovered, setHovered] = useState<HoverInfo | null>(null)
+  const data = state.status === 'ready' ? state.data : null
 
   useEffect(() => {
     onSelectRef.current = onSelect
@@ -153,9 +154,7 @@ export function GraphPanel({ state, onSelect, subgraphLimit, onSubgraphLimit }: 
       cy.destroy()
       cyRef.current = null
     }
-  }, [])
-
-  const data = state.status === 'ready' ? state.data : null
+  }, [data !== null])
 
   useEffect(() => {
     const cy = cyRef.current
@@ -251,6 +250,8 @@ export function GraphPanel({ state, onSelect, subgraphLimit, onSubgraphLimit }: 
           >
             limit 2 — урезанное
           </button>
+          <button type="button" className={`chip ${subgraphLimit === 200 ? 'is-on' : ''}`}
+            onClick={() => onSubgraphLimit(200)}>limit 200</button>
         </div>
       </div>
 
@@ -269,8 +270,8 @@ export function GraphPanel({ state, onSelect, subgraphLimit, onSubgraphLimit }: 
               {data.total_edges}, скрыто: {data.omitted_edges}. <code>limit={subgraphLimit}</code> — это ограничение
               ответа API, а не фильтр сети.
               <div className="banner-actions">
-                <button type="button" className="btn" onClick={() => onSubgraphLimit(80)}>
-                  Показать окружение целиком
+                <button type="button" className="btn" onClick={() => onSubgraphLimit(200)} disabled={subgraphLimit === 200}>
+                  {subgraphLimit === 200 ? 'Достигнут лимит 200' : 'Показать остальных соседей'}
                 </button>
                 <span className="chip">{limitationLabel('subgraph_truncated')}</span>
               </div>

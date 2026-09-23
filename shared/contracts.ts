@@ -1,4 +1,4 @@
-/** Transport contract v1. Types only; HTTP handlers are not implemented yet.
+/** Transport contract v1. HTTP handlers live in backend/app.py.
  * All GIDs MUST remain strings. Fixtures are synthetic and explicitly marked.
  */
 export type Gid = string;

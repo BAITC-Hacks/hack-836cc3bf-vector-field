@@ -14,8 +14,8 @@ interface Props {
   onRoleFilter(value: Role | 'all'): void
   seedFilter: SeedFilter
   onSeedFilter(value: SeedFilter): void
-  /** Size of the whole fixture collection, taken from summary.counts. */
-  fixtureTotal: number
+  totalNodes: number
+  mode: 'fixture' | 'live'
 }
 
 const ROLE_CHIPS: { value: Role | 'all'; label: string }[] = [
@@ -37,7 +37,8 @@ export function PriorityQueue({
   onRoleFilter,
   seedFilter,
   onSeedFilter,
-  fixtureTotal,
+  totalNodes,
+  mode,
 }: Props) {
   return (
     <section className="panel panel-queue">
@@ -71,10 +72,9 @@ export function PriorityQueue({
             </button>
           ))}
         </div>
-        <p className="hint hint-warning">
-          Фильтры применяются только к fixture-коллекции из {fixtureTotal} узлов. Это не поиск по полной сети кейса
-          (2248 узлов): полный список и фильтры всей сети даст <code>GET /api/entities</code>.
-        </p>
+        {mode === 'fixture' ? <p className="hint hint-warning">
+          Фильтры применяются только к учебной коллекции из {totalNodes} узлов.
+        </p> : <p className="hint">Фильтры применяются ко всем {totalNodes} узлам snapshot; показаны первые 200 результатов.</p>}
       </div>
 
       {state.status === 'idle' || state.status === 'loading' ? (
@@ -83,13 +83,13 @@ export function PriorityQueue({
         <ErrorBlock title="Очередь недоступна" error={state.error} />
       ) : state.data.items.length === 0 ? (
         <EmptyBlock title="Ни один узел не подходит под фильтр">
-          Под выбранные фильтры не попал ни один из {state.data.total} fixture-узлов. Снимите фильтр, чтобы увидеть
+          Под выбранные фильтры не попал ни один из {state.data.total} узлов. Снимите фильтр, чтобы увидеть
           очередь целиком.
         </EmptyBlock>
       ) : (
         <>
           <p className="count-line">
-            показано {state.data.items.length} из {state.data.total} fixture-узлов
+            показано {state.data.items.length} из {state.data.total} узлов
           </p>
           <ol className="queue">
             {state.data.items.map((item) => (

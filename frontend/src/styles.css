@@ -44,6 +44,7 @@ h1 { margin: 0 8px 0 0; font-size: 24px; letter-spacing: -.03em; }
 .search { display: flex; gap: 7px; }
 .search-input { min-width: 0; flex: 1; border: 1px solid #2b4763; border-radius: 6px; background: #071524; color: #f1f5f9; padding: 9px 10px; outline: none; font-size: 11px; }
 .search-input:focus { border-color: #38bdf8; box-shadow: 0 0 0 2px rgba(56, 189, 248, .14); }
+.investigator-question { display: block; width: 100%; box-sizing: border-box; margin-bottom: 10px; resize: vertical; }
 .btn { border: 1px solid #2b6b8d; border-radius: 6px; padding: 8px 11px; color: #dff6ff; background: #12354b; font-size: 11px; transition: background .15s; }
 .btn:hover { background: #18516f; }
 .btn-tiny { padding: 4px 7px; font-size: 10px; }

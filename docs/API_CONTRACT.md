@@ -1,6 +1,6 @@
 # Контракт v1: frontend ↔ backend ↔ Investigator
 
-Статус: зафиксированная спецификация для реализации. Реальных HTTP handlers, Pydantic-моделей и интеграционного теста пока нет. Согласованные формы: `shared/contracts.ts`; синтетические примеры: `shared/fixtures.json`. Frontend может начать сразу. Backend реализует именно эти формы; agent использует те же profile/subgraph/list функции.
+Статус: зафиксированный transport v1. Live HTTP handlers и интеграционные тесты находятся в `backend/` и `integration/`; отдельные Pydantic response-модели пока не введены. Согласованные формы: `shared/contracts.ts`; синтетические примеры: `shared/fixtures.json`. Backend и agent читают один рассчитанный snapshot через общие service-функции.
 
 Этот документ уточняет прежнее текстовое описание в BUILD_BRIEF/README. При различиях transport-полей контракт v1 имеет приоритет; требования CSV из официального кейса остаются неизменными. Семантика правил ролей остаётся в BUILD_BRIEF.
 
@@ -100,6 +100,6 @@ Tool calls — реальные name/status/duration_ms/evidence_ids, без с�
 
 ## Проверка совместимости
 
-Frontend импортирует типы и использует fixtures. Backend создаёт эквивалентные Pydantic-схемы, сериализует фактические ответы и проверяет соответствие contract. Fixtures не заменяют runtime-тест: после реализации обязательно проверить live entity, isolate, boundary, truncated subgraph, list pagination, CSV и AI outage.
+Frontend импортирует типы и по умолчанию использует live API; fixtures включаются явно. Backend сериализует live-ответы из одного snapshot; интеграционные тесты проверяют live entity, isolate, boundary, truncated subgraph, list pagination, CSV и AI outage. Явные Pydantic response-модели остаются следующим усилением runtime-валидации; обязательные поля v1 не менялись.
 
 Изменения обязательных полей требуют одновременного обновления типов, fixtures, backend, frontend и tools. Никаких отдельных «почти совместимых» форматов по веткам. Additive необязательное поле допустимо только после явного документирования его default.

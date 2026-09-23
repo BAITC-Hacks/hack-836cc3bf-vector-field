@@ -2,13 +2,13 @@
 
 Инструмент для AML-аналитика: определить, кого проверить первым среди участников наблюдаемой транзакционной сети, и проверить основания на графе.
 
-**Текущий статус:** подготовлены материалы кейса, аудит данных и план реализации. Продуктовый pipeline, роли, три финальных CSV, API и интерфейс ещё не реализованы. Команды запуска продукта будут добавлены по факту реализации.
+**Текущий статус интеграционной ветки:** pipeline создаёт три CSV и `snapshot.json` из исходных Parquet; FastAPI и React читают один live snapshot. Четыре read-only инструмента Investigator подключены к тем же in-process service-функциям. Реальный model adapter пока не подключён: `/api/investigate` честно возвращает `status=unavailable`, основной экран работает.
 
 ## С чего начать команде
 
 Готовые задания для трёх coding-сессий: `docs/STAGE_01_PROMPTS.md` — DAULET-01, NURASYL-01 и AKI-01. Это первый рабочий блок с конкретными результатами и проверками.
 
-**Обновление: осталось 4,5 часа.** Текущий тайминг — `docs/EXECUTION_PLAN_270_MIN.md`. Контракт v1 и общие примеры уже записаны: `docs/API_CONTRACT.md`, `shared/contracts.ts`, `shared/fixtures.json`. HTTP/Pydantic реализация ещё не выполнена. Старый agent-first plan из `context/` больше не является рабочим расписанием.
+Контракт v1 и синтетические примеры описаны в `docs/API_CONTRACT.md`, `shared/contracts.ts`, `shared/fixtures.json`. Исторический тайминг сохранён в `docs/EXECUTION_PLAN_270_MIN.md`.
 
 **Решения после внешнего review:** `docs/DECISIONS.md`. Концепция заморожена; нормализация v0 определена точно; карточка отдельно объясняет роль и сумму вкладов priority; coordinator отображается как структурный посредник. Новый цикл планирования и отсчёт времени не начинаются.
 
@@ -40,7 +40,7 @@ python analysis/audit_dataset.py
 
 Результат: `analysis/dataset_audit.json` и `analysis/node_metrics.csv`. Это метрики для review, а не требуемые кейсом финальные роли и приоритеты. Методика и ограничения — в `analysis/README.md`.
 
-## Обязательные результаты будущей реализации
+## Обязательные результаты
 
 - `nodes_roles.csv`: 2248 строк, role, role_score, cluster_id, priority_score, evidence.
 - `clusters.csv`: размер, seed, внутренний оборот, важные узлы и гипотеза каждого кластера.
@@ -82,11 +82,11 @@ python analysis/audit_dataset.py
 | `docs/BUILD_BRIEF.md` | Scope, правила v0, контракт, план, rubric и demo | План реализации |
 | `docs/RED_TEAM_REVIEW.md` | Обоснование решений, аудит, примеры и market check | Проведённый review |
 | `analysis/` | Воспроизводимая проверка данных и исследовательские результаты | Работает; не является продуктовым pipeline |
-| `pipeline/` | Расчёты, scoring, clustering и экспорты | Планируемый модуль |
-| `backend/` | FastAPI и доступ к общему snapshot | Планируемый модуль |
-| `frontend/` | React/Vite: список, граф, карточка и AI-панель | Планируемый модуль |
-| `agent/` | Один Investigator, tools и проверка ответа | Планируемый модуль |
-| `shared/` | Общие TypeScript-типы и синтетические request/response fixtures v1 | Созданы; runtime API ещё требуется |
+| `pipeline/` | Расчёты, scoring, clustering, CSV и JSON snapshot | Работает на исходных Parquet |
+| `backend/` | FastAPI и общий read-only snapshot service | Работает локально |
+| `frontend/` | React/Vite: список, граф, карточка и AI-панель | Работает с live API; fixture включается явно |
+| `agent/` | Один Investigator, tools и проверка ответа | Четыре live tools проверены; model adapter отсутствует |
+| `shared/` | TypeScript-типы и синтетические fixtures v1 | Contract v1 не менялся |
 
 Планируемые директории не означают, что соответствующий код уже существует. После появления реализации владельцы обновляют эту таблицу и команды запуска.
 
@@ -191,7 +191,7 @@ Pipeline работает batch-режимом. API загружает резу�
 
 ## 8. Предлагаемый API и согласование контрактов
 
-Это спецификация интерфейса, а не список уже работающих routes. Типы и fixtures v1 находятся в shared/, точная семантика и ошибки — в docs/API_CONTRACT.md. Runtime-схемы реализует backend-владелец по этому контракту. При расхождении краткого описания здесь и transport v1 использовать v1.
+Работающие routes читают `pipeline/out/snapshot.json`. Типы и fixtures v1 находятся в shared/, точная семантика и ошибки — в docs/API_CONTRACT.md. При расхождении краткого описания здесь и transport v1 использовать v1.
 
 | Route | Назначение |
 |---|---|
@@ -241,29 +241,36 @@ git switch codex/agent
 
 ## 11. Запуск: что доступно сейчас
 
-Сейчас доступен только исследовательский аудит. Для изолированного окружения без зависимости от активации shell:
+Рабочий запуск из корня репозитория. Нужны Python 3.12 и Node.js 22.12+ (или 20.19+). API key не нужен.
 
 Windows PowerShell:
 
 ```powershell
 python -m venv .venv
-.\.venv\Scripts\python.exe -m pip install -r analysis/requirements.txt
-.\.venv\Scripts\python.exe analysis/audit_dataset.py
+.\.venv\Scripts\python.exe -m pip install -r backend/requirements.txt
+.\.venv\Scripts\python.exe -m pipeline --data 'case/data (1)/data' --out pipeline/out
+cd frontend
+npm.cmd ci
+npm.cmd run build
+cd ..
+.\.venv\Scripts\python.exe -m uvicorn backend.app:app --host 127.0.0.1 --port 8000
 ```
 
 macOS/Linux:
 
 ```bash
 python3 -m venv .venv
-.venv/bin/python -m pip install -r analysis/requirements.txt
-.venv/bin/python analysis/audit_dataset.py
+.venv/bin/python -m pip install -r backend/requirements.txt
+.venv/bin/python -m pipeline --data 'case/data (1)/data' --out pipeline/out
+cd frontend && npm ci && npm run build && cd ..
+.venv/bin/python -m uvicorn backend.app:app --host 127.0.0.1 --port 8000
 ```
 
-Проверенная среда аудита — Python 3.12.10; зависимости зафиксированы в `analysis/requirements.txt`. На другом OS установка и запуск должны быть проверены отдельно; успешный Windows run не доказывает macOS run.
+Открыть `http://127.0.0.1:8000`. Выходы: `pipeline/out/nodes_roles.csv`, `clusters.csv`, `top_nodes.csv`, `snapshot.json`. Проверено на Windows с Python 3.12.6: 2248 узлов, 19 изолятов, 105 кластеров, полный pipeline со snapshot за 7.171 с после установки зависимостей. macOS/Linux пока не проверены.
 
-Для аудита API key не нужен. Его результаты не следует выдавать за финальные CSV. После реализации Даулет добавляет сюда реальные команды: installation, pipeline, API и UI, а также одну команду полного расчёта. Не добавлять вымышленные команды запуска ещё не существующего приложения.
+Проверка: `.\.venv\Scripts\python.exe -m unittest pipeline.test_pipeline -v`, `.\.venv\Scripts\python.exe -m unittest discover -s agent -p 'test_*.py' -v`, `.\.venv\Scripts\python.exe -m unittest discover -s integration -p 'test_*.py' -v`, `npm.cmd run build` в `frontend/`. Для учебного UI отдельно задать `VITE_DATA_PROVIDER=fixture`; его scores синтетические.
 
-AI key хранится в локальном `.env`, а список нужных переменных — в будущем `.env.example` без значений секретов. Обязательное ядро не должно требовать `.env` с ключом. Временные зависимости `.analysis_deps/` служат только локальному аудиту и не являются частью поставки.
+Реальная модель для Investigator пока не подключена. Не добавляйте ключ в репозиторий. API/CSV/UI работают при отсутствии ключа.
 
 ## 12. Приоритеты и контроль времени
 

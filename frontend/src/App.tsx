@@ -4,6 +4,7 @@ import { BriefHeader } from './components/BriefHeader'
 import { Dossier } from './components/Dossier'
 import { FixtureScenarios, type Scenario } from './components/FixtureScenarios'
 import { GraphPanel } from './components/GraphPanel'
+import { InvestigatorPanel } from './components/InvestigatorPanel'
 import { PriorityQueue, type SeedFilter } from './components/PriorityQueue'
 import { SearchBox } from './components/SearchBox'
 import { createDataProvider, useAsyncData } from './data'
@@ -89,6 +90,7 @@ export default function App() {
       <main className="workspace">
         <aside className="left-column">
           <SearchBox
+            mode={provider.mode}
             value={query}
             onValueChange={(value) => {
               setQuery(value)
@@ -101,11 +103,11 @@ export default function App() {
               searchFeedback ? <p className="field-feedback">{searchFeedback}</p> : null
             }
           />
-          <FixtureScenarios
+          {provider.mode === 'fixture' ? <FixtureScenarios
             scenarios={scenarios}
             activeGid={selectedGid}
             onSelect={selectGid}
-          />
+          /> : null}
           <PriorityQueue
             state={queue}
             selectedGid={selectedGid}
@@ -114,7 +116,8 @@ export default function App() {
             onRoleFilter={setRoleFilter}
             seedFilter={seedFilter}
             onSeedFilter={setSeedFilter}
-            fixtureTotal={summary.status === 'ready' ? summary.data.counts.n_nodes : 6}
+            totalNodes={summary.status === 'ready' ? summary.data.counts.n_nodes : 0}
+            mode={provider.mode}
           />
         </aside>
 
@@ -135,12 +138,14 @@ export default function App() {
             </div>
             <Dossier state={entity} />
           </section>
+          <InvestigatorPanel mode={provider.mode} selectedGid={selectedGid}
+            snapshotId={summary.status === 'ready' ? summary.data.meta.snapshot_id : null} />
         </aside>
       </main>
 
       <footer className="footer">
-        <span>HackAlem · synthetic fixture UI</span>
-        <span>Backend endpoints next: <code>/api/summary</code> · <code>/api/entities</code> · <code>/api/entities/{'{gid}'}</code> · <code>/api/subgraph</code></span>
+        <span>HackAlem · {provider.mode === 'fixture' ? 'synthetic fixture UI' : 'live local snapshot'}</span>
+        <span>Наблюдаемые связи и эвристические баллы требуют проверки аналитиком.</span>
       </footer>
     </div>
   )
