@@ -2,7 +2,11 @@
 
 from __future__ import annotations
 
+import asyncio
+import logging
+import os
 from pathlib import Path
+from time import monotonic
 from typing import Any
 
 from fastapi import FastAPI, Query, Request
@@ -11,10 +15,13 @@ from fastapi.responses import FileResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 
 from agent import investigate
+from agent.openai_model import model_from_environment
 from agent.session import SnapshotMismatch
 from pipeline.run import CSV_COLUMNS, DEFAULT_OUT
 
 from .service import EntityNotFound, InvestigatorProvider, SnapshotService
+
+logger = logging.getLogger("uvicorn.error")
 
 
 def _error(code: str, message: str, status: int) -> JSONResponse:
@@ -22,7 +29,8 @@ def _error(code: str, message: str, status: int) -> JSONResponse:
 
 
 def create_app(*, snapshot_path: Path | None = None, service: SnapshotService | None = None,
-               model: Any = None, static_dir: Path | None = None) -> FastAPI:
+               model: Any = None, static_dir: Path | None = None,
+               auto_model: bool = False) -> FastAPI:
     app = FastAPI(title="HackAlem API", version="1")
     path = snapshot_path or DEFAULT_OUT / "snapshot.json"
     if service is None and path.is_file():
@@ -30,10 +38,16 @@ def create_app(*, snapshot_path: Path | None = None, service: SnapshotService | 
     app.state.service = service
     app.state.export_dir = path.parent
     app.state.model = model
+    app.state.auto_model = auto_model
 
     @app.exception_handler(RequestValidationError)
     async def invalid_request(_request: Request, _exc: RequestValidationError) -> JSONResponse:
         return _error("INVALID_REQUEST", "Некорректные параметры запроса.", 422)
+
+    @app.exception_handler(Exception)
+    async def internal_error(_request: Request, error: Exception) -> JSONResponse:
+        logger.error("request failed error_type=%s", type(error).__name__)
+        return _error("INTERNAL_ERROR", "Внутренняя ошибка сервера.", 500)
 
     @app.exception_handler(ValueError)
     async def invalid_value(_request: Request, error: ValueError) -> JSONResponse:
@@ -100,8 +114,34 @@ def create_app(*, snapshot_path: Path | None = None, service: SnapshotService | 
     @app.post("/api/investigate")
     async def investigation(request: dict) -> dict:
         snapshot = current()
-        return await investigate(request, InvestigatorProvider(snapshot), app.state.model,
-                                 meta=snapshot.meta, known_gids=snapshot.known_gids)
+        started = monotonic()
+        selected = request.get("selected_gids")
+        logger.info("investigation received snapshot=%s selected_count=%s",
+                    snapshot.meta["snapshot_id"], len(selected) if isinstance(selected, list) else "invalid")
+        selected_model = app.state.model
+        managed_client = None
+        if app.state.auto_model and selected_model is None and os.getenv("OPENAI_API_KEY", "").strip():
+            try:
+                selected_model = model_from_environment()
+                if selected_model is not None:
+                    managed_client = selected_model.client
+            except Exception as error:
+                logger.warning("investigation model initialization failed error_type=%s", type(error).__name__)
+        try:
+            result = await investigate(
+                request, InvestigatorProvider(snapshot), selected_model,
+                meta=snapshot.meta, known_gids=snapshot.known_gids,
+            )
+            logger.info("investigation completed status=%s duration_ms=%d tools=%s",
+                        result["status"], int((monotonic() - started) * 1000),
+                        [(call["name"], call["status"]) for call in result["tool_calls"]])
+            return result
+        finally:
+            if managed_client is not None:
+                try:
+                    await asyncio.wait_for(managed_client.close(), timeout=2.0)
+                except Exception as error:
+                    logger.warning("investigation model client close failed error_type=%s", type(error).__name__)
 
     site = static_dir or Path(__file__).resolve().parents[1] / "frontend" / "dist"
     if site.is_dir():
@@ -109,4 +149,4 @@ def create_app(*, snapshot_path: Path | None = None, service: SnapshotService | 
     return app
 
 
-app = create_app()
+app = create_app(auto_model=True)

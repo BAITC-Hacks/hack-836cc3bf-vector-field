@@ -1,0 +1,62 @@
+.investigator-panel .investigator-context-picker {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 0 0 10px;
+  padding: 0;
+  border: 0;
+}
+.investigator-context-picker legend {
+  margin-bottom: 6px;
+  color: #a9c3cc;
+  font-size: 11px;
+}
+.investigator-context-picker label {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 6px 8px;
+  border: 1px solid #345260;
+  border-radius: 5px;
+  color: #b9cbd5;
+  font-size: 11px;
+  cursor: pointer;
+}
+.investigator-context-picker label.is-active {
+  color: #d6fff6;
+  border-color: #4b9d90;
+  background: #153c3b;
+}
+.investigator-context-picker input { accent-color: #71cabc; margin: 0; }
+.investigator-context-picker label:has(input:disabled) { opacity: .6; cursor: default; }
+.investigator-examples { display: grid; gap: 5px; margin-bottom: 12px; }
+.investigator-example {
+  padding: 6px 8px;
+  border: 1px solid #345260;
+  border-radius: 5px;
+  background: #102a37;
+  color: #bde4df;
+  text-align: left;
+  font: inherit;
+  font-size: 11px;
+  line-height: 1.4;
+  cursor: pointer;
+}
+.investigator-example:hover { border-color: #65b9ad; background: #173d47; }
+.investigator-example:focus-visible,
+.investigator-context-picker label:has(input:focus-visible) {
+  outline: 2px solid #8ee5cf;
+  outline-offset: 2px;
+}
+.investigator-pending { min-height: 100px; padding-bottom: 12px; }
+.investigator-pending .investigator-context + .investigator-context { margin-top: 8px; }
+.investigator-panel .investigator-facts li { scroll-margin-top: 24px; }
+.investigator-panel .investigator-facts li:target { border-color: #88ddcf; box-shadow: 0 0 0 2px #88ddcf33; }
+.investigator-fact-details { margin-top: 9px; color: #a5c0cb; font-size: 11px; line-height: 1.5; overflow-wrap: anywhere; }
+.investigator-fact-details summary { cursor: pointer; }
+.investigator-fact-details dl { margin: 8px 0 0; }
+.investigator-fact-details dt { margin-top: 5px; color: #89a9b7; }
+.investigator-fact-details dd { margin-left: 0; color: #cadddf; }
+.investigator-panel .investigator-trace li { display: block; padding: 9px 0; border-bottom: 1px solid #24464b; }
+.investigator-tool-heading { display: flex; justify-content: space-between; flex-wrap: wrap; gap: 5px; }
+.investigator-tool-name { display: block; margin-top: 4px; color: #c9e6e0; font-size: 11px; overflow-wrap: anywhere; }

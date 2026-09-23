@@ -1,6 +1,8 @@
 # HackAlem frontend
 
-Один React/Vite/TypeScript экран для сценария `вопрос Investigator → проверяемые факты → узел/граф`, сохраняя очередь, поиск и dossier.
+Один React/Vite/TypeScript экран для сценария `очередь → выбранный узел → основания и граф → вопрос Investigator`.
+
+Финальный UX pass: [проверки и сценарий демо](FINAL_UX_GATE.md). При открытии выбран первый узел рассчитанной очереди; приоритет и роль объясняются отдельно. Live AI проверка этого pass отложена по согласованию с владельцем; статус unavailable проверен.
 
 ## Фактически проверенные команды
 
@@ -21,7 +23,14 @@ npm.cmd run preview
 
 В live-режиме вопрос Investigator можно отправить по всей наблюдаемой сети или с выбранным gid как контекстом. Форма вызывает `POST /api/investigate` по transport v1 и показывает loading, completed, empty, unavailable, timeout и failed отдельно. В завершённом ответе отображаются findings, числовые evidence facts, ограничения, следующие проверки и фактически выполненные tool calls; gid открывает существующую карточку и граф. В шапке доступны три CSV через `/api/export/{filename}`. UI не создаёт AI-ответов в fixture mode.
 
-Проверяемые сценарии:
+Узлы для demo на исходном live snapshot:
+
+- карточка и Investigator: `100000003115284100`;
+- изолят: `100000000456947100`;
+- boundary `depth=4`: `100000000018102100`;
+- unknown gid: `999999999999999999`, ожидается `ENTITY_NOT_FOUND`.
+
+Следующие примеры относятся **только к синтетическому fixture mode**, а не к исходному dataset:
 
 - обычная карточка `900000000000000001`;
 - изолят `900000000000000006`;
@@ -51,10 +60,16 @@ Vite проксирует `/api` на `http://127.0.0.1:8000`. Нужны routes
 - `GET /api/subgraph?gid=&hops=&limit=`
 - `GET /api/clusters`
 
-В собранном режиме FastAPI раздаёт `frontend/dist` вместе с `/api`; `GET /api/summary` и остальные routes используют `pipeline/out/snapshot.json`. Панель Investigator отображает `unavailable` при отсутствии model adapter, не скрывая core.
+В собранном режиме FastAPI раздаёт `frontend/dist` вместе с `/api`; `GET /api/summary` и остальные routes используют `pipeline/out/snapshot.json`. Панель Investigator получает ответ `/api/investigate`; без `OPENAI_API_KEY` она отображает `unavailable`, не скрывая core.
+
+## Проверка Stage 2
+
+В интеграционном checkout сборка прошла на Node.js 24.21.0. В браузере с реальным OpenAI provider проверены два сценария: ranking за 9464 мс (`rank_entities` и три `get_entity_profile`, три findings и девять facts) и профиль `100000003115284100` (`get_entity_profile`, два findings и десять facts). Точные facts сверены со snapshot, смысл findings просмотрен отдельно. Канонический adapter — `agent/openai_model.py`, модель по умолчанию `gpt-5.6-luna`.
+
+Полные результаты, ограничения и статус интеграции: [Stage 2 closure](../integration/STAGE2_CLOSURE.md). Эти проверки относятся к интеграционному checkout и сами по себе не означают завершение merge в `main`.
 
 ## Ограничения
 
 - Без предварительного запуска pipeline live API вернёт `SNAPSHOT_NOT_READY`.
-- Реальная модель Investigator пока не подключена; её status отображается честно.
-- На Windows в этой сессии сборка прошла на Node 22.11 с предупреждением Vite о требовании 22.12+; `npm ci` пропустил optional Windows binding Rolldown, поэтому его пришлось доустановить в локальный `node_modules` командой `npm.cmd install --no-save --no-package-lock @rolldown/binding-win32-x64-msvc@1.2.9`. Эта команда не меняет lockfile.
+- Адаптер OpenAI Responses работает при наличии `OPENAI_API_KEY`; отсутствие ключа и ошибки отображаются честным статусом. Live browser smoke покрывает ranking и профиль, а не любой возможный вопрос.
+- На Windows с Node 22.11 в финальном UX pass `npm ci` прошёл, но пропустил optional binding Rolldown; потребовалось `npm.cmd install --no-save --no-package-lock @rolldown/binding-win32-x64-msvc@1.2.9`. Затем сборка прошла. Vite требует Node 20.19+ или 22.12+; успешный Stage 2 запуск на Node 24.21.0 описан выше. Перед `npm ci` остановите Vite, чтобы Windows освободила native module.

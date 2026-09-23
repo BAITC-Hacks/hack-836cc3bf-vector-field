@@ -80,7 +80,8 @@ export function InvestigationResult({ result, submitted, onSelect }: Props) {
       ) : (
         <>
           <p className="investigator-summary">{result.message}</p>
-          <h3 className="investigator-section-title">Что найдено</h3>
+          <p className="investigator-context">Приоритет — баллы дальнейшей проверки, не вероятность преступления.</p>
+          <h3 className="investigator-section-title">Выводы Investigator</h3>
           <ol className="investigator-findings">
             {result.findings.map((finding, index) => (
               <li className="investigator-finding" key={`${index}-${finding.text}`}>
@@ -88,7 +89,7 @@ export function InvestigationResult({ result, submitted, onSelect }: Props) {
                 <p>{finding.text}</p>
                 {finding.gids.length > 0 ? (
                   <div className="investigator-references">
-                    <span>Открыть узел:</span>
+                    <span>Проверить на графе →</span>
                     {finding.gids.map((gid) => (
                       <button className="investigator-gid" type="button" key={gid} onClick={() => onSelect(gid)}
                         title={`Открыть карточку и граф узла ${gid}`}>
@@ -122,7 +123,7 @@ export function InvestigationResult({ result, submitted, onSelect }: Props) {
 
       {completed && result.evidence.length > 0 ? (
         <section className="investigator-result-section" aria-label="Основания ответа">
-          <h3 className="investigator-section-title">Основания · {result.evidence.length}</h3>
+          <h3 className="investigator-section-title">Факты из данных · {result.evidence.length}</h3>
           <ol className="investigator-facts">
             {result.evidence.map((fact, index) => (
               <li id={`investigator-fact-${index + 1}`} key={fact.evidence_id}>
@@ -136,6 +137,15 @@ export function InvestigationResult({ result, submitted, onSelect }: Props) {
                     title={`Открыть карточку и граф узла ${fact.gid}`}>{fact.gid}</button>
                   <span>{fact.source === 'derived' ? 'расчёт по данным' : fact.source}</span>
                 </div>
+                <details className="investigator-fact-details">
+                  <summary>Источник и границы факта</summary>
+                  <dl>
+                    <dt>Область наблюдения</dt><dd>{fact.scope}</dd>
+                    <dt>Правило</dt><dd><code>{fact.rule_id}</code></dd>
+                    <dt>ID факта</dt><dd><code>{fact.evidence_id}</code></dd>
+                  </dl>
+                  <LimitationList items={fact.limitations} />
+                </details>
               </li>
             ))}
           </ol>
@@ -160,12 +170,22 @@ export function InvestigationResult({ result, submitted, onSelect }: Props) {
 
       {result.tool_calls.length > 0 ? (
         <details className="investigator-trace">
-          <summary>Выполненные операции · {result.tool_calls.length}</summary>
+          <summary>Реальные вызовы инструментов · {result.tool_calls.length}</summary>
           <ol>
             {result.tool_calls.map((call, index) => (
               <li key={`${call.name}-${index}`}>
-                <span>{TOOL_LABELS[call.name] ?? call.name}</span>
-                <span>{call.status === 'completed' ? 'выполнено' : 'ошибка'} · {call.duration_ms} мс</span>
+                <div className="investigator-tool-heading">
+                  <span>{TOOL_LABELS[call.name] ?? 'Аналитическая операция'}</span>
+                  <span>{call.status === 'completed' ? 'выполнено' : 'ошибка'} · {call.duration_ms} мс</span>
+                </div>
+                <code className="investigator-tool-name">{call.name}</code>
+                {call.evidence_ids.some((id) => factNumbers.has(id)) ? <div className="investigator-references">
+                  <span>Факты в ответе:</span>
+                  {call.evidence_ids.map((id) => {
+                    const number = factNumbers.get(id)
+                    return number ? <a className="investigator-fact-link" href={`#investigator-fact-${number}`} key={id}>Факт {number}</a> : null
+                  })}
+                </div> : null}
               </li>
             ))}
           </ol>
