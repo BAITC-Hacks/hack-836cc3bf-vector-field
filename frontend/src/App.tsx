@@ -1,4 +1,4 @@
-import { useMemo, useRef, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import type { EntityResponse, Gid, Role, SubgraphResponse, SummaryResponse } from '@shared/contracts'
 import { BriefHeader } from './components/BriefHeader'
 import { Dossier } from './components/Dossier'
@@ -19,10 +19,18 @@ export default function App() {
   const [queryError, setQueryError] = useState<string | null>(null)
   const [searchFeedback, setSearchFeedback] = useState<string | null>(null)
   const [selectedGid, setSelectedGid] = useState<Gid | null>(null)
+  const [fromInvestigator, setFromInvestigator] = useState(false)
   const [subgraphLimit, setSubgraphLimit] = useState(80)
   const graphSection = useRef<HTMLElement | null>(null)
 
   const summary = useAsyncData<SummaryResponse>(() => provider.getSummary(), [provider])
+  useEffect(() => {
+    if (summary.status === 'ready' && selectedGid === null && summary.data.top_nodes.length > 0) {
+      const firstGid = summary.data.top_nodes[0].gid
+      setSelectedGid(firstGid)
+      setQuery(firstGid)
+    }
+  }, [summary, selectedGid])
   const queue = useAsyncData(
     () =>
       provider.listEntities({
@@ -46,6 +54,7 @@ export default function App() {
   )
 
   function selectGid(gid: Gid) {
+    setFromInvestigator(false)
     setSelectedGid(gid)
     setQuery(gid)
     setQueryError(null)
@@ -54,6 +63,7 @@ export default function App() {
 
   function openInvestigationGid(gid: Gid) {
     selectGid(gid)
+    setFromInvestigator(true)
     window.requestAnimationFrame(() => {
       graphSection.current?.focus({ preventScroll: true })
       graphSection.current?.scrollIntoView({ block: 'start', inline: 'nearest' })
@@ -132,21 +142,24 @@ export default function App() {
 
         <section className="center-column" ref={graphSection} tabIndex={-1}
           aria-label={selectedGid ? `Граф узла ${selectedGid}` : 'Граф узла'}>
+          {fromInvestigator ? <div className="selection-origin" role="status">
+            Открыт узел из ответа Investigator. <a href="#investigator">Вернуться к ответу ↓</a>
+          </div> : null}
           <GraphPanel
             state={subgraph}
             onSelect={selectGid}
             subgraphLimit={subgraphLimit}
             onSubgraphLimit={setSubgraphLimit}
           />
+          <InvestigatorPanel mode={provider.mode} selectedGid={entity.status === 'ready' && entity.data?.entity.gid === selectedGid ? selectedGid : null} onSelect={openInvestigationGid}
+            snapshotId={summary.status === 'ready' ? summary.data.meta.snapshot_id : null} />
         </section>
 
         <aside className="right-column">
-          <InvestigatorPanel mode={provider.mode} selectedGid={selectedGid} onSelect={openInvestigationGid}
-            snapshotId={summary.status === 'ready' ? summary.data.meta.snapshot_id : null} />
           <section className="panel dossier-panel" id="selected-dossier" tabIndex={-1}>
             <div className="panel-head">
-              <h2 className="panel-title">Dossier</h2>
-              <span className="panel-sub">профиль выбранного gid</span>
+              <h2 className="panel-title">Почему этот узел</h2>
+              <span className="panel-sub">карточка проверки</span>
             </div>
             <Dossier state={entity} />
           </section>
@@ -154,7 +167,7 @@ export default function App() {
       </main>
 
       <footer className="footer">
-        <span>HackAlem · {provider.mode === 'fixture' ? 'synthetic fixture UI' : 'live local snapshot'}</span>
+        <span>HackAlem · {provider.mode === 'fixture' ? 'Учебные данные' : 'Анализ наблюдаемой финансовой сети'}</span>
         <span>Наблюдаемые связи и эвристические баллы требуют проверки аналитиком.</span>
       </footer>
     </div>

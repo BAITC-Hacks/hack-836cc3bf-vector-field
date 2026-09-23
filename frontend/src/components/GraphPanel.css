@@ -1,0 +1,16 @@
+.panel-graph .panel-head { flex-wrap: wrap; gap: 7px 12px; padding-bottom: 10px; }
+.panel-graph .panel-title { padding-bottom: 0; }
+.panel-graph .limit-toggle { flex-wrap: wrap; padding-top: 8px; }
+.panel-graph .graph-context { display: grid; gap: 5px; margin-top: 12px; margin-bottom: 8px; color: #9fb6cb; font-size: 12px; line-height: 1.4; }
+.panel-graph .graph-selected-label { color: #dff3ff; font-weight: 600; }
+.panel-graph .graph-selected-label code { font-size: 12px; overflow-wrap: anywhere; }
+.panel-graph .graph-status { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px; color: #c4d9e9; font-size: 12px; }
+.panel-graph .graph-tools { display: flex; flex-wrap: wrap; gap: 6px; }
+.panel-graph .graph-tools a { text-decoration: none; }
+.panel-graph .graph-node-info { min-height: 42px; padding: 5px 0 8px; color: #abc1d6; font-size: 12px; line-height: 1.5; overflow-wrap: anywhere; }
+.panel-graph .graph-canvas { height: 410px; min-height: 360px; background: #081726; }
+.panel-graph .graph-navigation-note { margin-top: 9px; margin-bottom: 10px; color: #a3b6cb; font-size: 11px; line-height: 1.5; }
+.panel-graph .graph-boundary-note { margin-top: 10px; margin-bottom: 4px; padding: 9px 11px; border-left: 3px solid #fb923c; border-radius: 3px; color: #f5cfa3; background: #2c231a; font-size: 12px; line-height: 1.5; }
+.panel-graph .legend { font-size: 11px; gap: 7px 12px; }
+.panel-graph .legend-sep { margin-left: 0; }
+@media (min-height: 950px) { .panel-graph .graph-canvas { height: 460px; } }

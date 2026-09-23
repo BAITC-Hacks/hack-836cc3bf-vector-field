@@ -29,6 +29,19 @@ export function formatCount(value: number): string {
 }
 
 /** Scores stay 0..1 exactly as in API/CSV. Never rendered as a percentage. */
-export function formatScore(value: number): string {
-  return value.toFixed(4)
+export function formatScore(value: number, digits = 4): string {
+  return value.toFixed(digits)
+}
+
+/** Translate known feature labels only; preserve supplied facts and numbers. */
+export function readableWhy(text: string): string {
+  const labels: Record<string, string> = {
+    direct_seed_senders: 'прямые отправители из seed',
+    seed_reach_4: 'достижимость от seed',
+    in_degree: 'число отправителей',
+    flow_volume: 'объём переводов',
+    betweenness: 'положение на путях в сети',
+    out_degree: 'число получателей',
+  }
+  return text.replace(/\b(direct_seed_senders|seed_reach_4|in_degree|flow_volume|betweenness|out_degree)\b/g, (metric) => labels[metric])
 }
