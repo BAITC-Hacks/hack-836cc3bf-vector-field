@@ -25,13 +25,13 @@ export function SearchBox({ mode, value, onValueChange, onSearch, validationErro
 
   return (
     <section className="panel">
-      <h2 className="panel-title">Поиск по gid</h2>
+      <h2 className="panel-title">Найти узел по GID</h2>
       <form className="search" onSubmit={submit}>
         <input
           className="search-input"
           value={value}
           onChange={(event) => onValueChange(event.target.value)}
-          placeholder={mode === 'fixture' ? 'точный gid, например 900000000000000001' : 'введите полный gid из snapshot'}
+          placeholder={mode === 'fixture' ? '900000000000000001' : 'Полный идентификатор клиента'}
           spellCheck={false}
           autoComplete="off"
           inputMode="numeric"
@@ -42,8 +42,7 @@ export function SearchBox({ mode, value, onValueChange, onSearch, validationErro
         </button>
       </form>
       <p className="hint">
-        Только точное совпадение по полному gid — строке из десятичных цифр.
-        {mode === 'live' ? ' Поиск идёт по всем узлам snapshot.' : ' Доступна учебная fixture-коллекция.'}
+        {mode === 'live' ? 'Поиск по всей сети, включая узлы вне очереди.' : 'Поиск в учебном наборе.'} Вставьте полный GID.
       </p>
       {validationError ? <p className="field-error">{validationError}</p> : null}
       {feedback}

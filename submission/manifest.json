@@ -13,9 +13,10 @@
     "pipeline/out/clusters.csv": "d15c7c481688cf33783391d7c965992171c9e6ec206aa06512ecadf4bf897c17",
     "pipeline/out/top_nodes.csv": "15514a67b2c4102221cf1a8ad1c6d584c7750be714765764f90037a090e315cf",
     "pipeline/out/snapshot.json": "fb41bd4268b1f57c24b7ad08173a92069817c0a7a5f513dcbf07aa8631aa1256",
-    "frontend/dist/assets/index-CadcAg-t.js": "43ab68654fb72945f46a147748cd13b57b416fd4692b0415a2993bda2cde39f3",
-    "frontend/dist/assets/index-VqRsCTMg.css": "def9c8aaf9ea8799358e75f133d66b40e8059d6304fc1095143e88a0c4482183",
-    "frontend/dist/index.html": "6b795ce5891a337db526f8563c523330fb9256b3cd6f6e4bfdf54f35aa87a8a5"
+    "frontend/dist/assets/index-BVwQw3DU.js": "c981553777b50e2b551656c8fe8cbe8ac0acb1047a671d7ec9715c557da10e2b",
+    "frontend/dist/assets/index-CZxxQKBb.css": "e20cb3f81c0ed88a4b6705a88332288ba69db8d7492b0ce75a64cff9bb0f6ad9",
+    "frontend/dist/index.html": "f0ce1e3f92102001ad751ed4d08786e46909b4037073e148eb50bbcacd826d19"
   },
-  "backup_sha256": "b551e5784c771f0680109c93e619cecef1b9010dec552fa69303f9bba48d04fa"
+  "backup_sha256": "d63a899b8f61aaafb3108e1a24b7a5f9990a6911c114d098d8b42ad4ee19eade",
+  "frontend_source_commit": "77c8e18"
 }
