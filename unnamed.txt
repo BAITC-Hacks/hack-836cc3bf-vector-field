@@ -1,4 +1,0 @@
-no-name file
-
-Placeholder created by Aki (frontend owner) on branch codex/frontend.
-Purpose: verify local commit + push flow on this branch.
