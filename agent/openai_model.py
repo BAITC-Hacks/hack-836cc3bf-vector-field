@@ -19,12 +19,20 @@ from .harness import (
 
 
 LOG = logging.getLogger(__name__)
-DEFAULT_MODEL = "gpt-6-luna"
+DEFAULT_MODEL = "gpt-5.6-luna"
 
 INSTRUCTIONS = """Ты помощник AML-аналитика по финансовой сети. Отвечай на языке вопроса.
 Факты бери только из вызовов доступных read-only инструментов текущего snapshot.
 Сохраняй gid в точности как строки. Не угадывай профили, связи, evidence_id или числа.
 priority_score — очередь аналитической проверки, не вероятность преступления.
+Объясняй роль отдельно от приоритета: role_signal_strength и название роли не входят
+в priority_score. Причины высокого приоритета подтверждай фактами priority_component_*;
+не называй силу роли причиной позиции в очереди. Нормализованный вклад не равен исходному числу.
+В finding только о роли описывай роль без сравнения с приоритетом. Любое упоминание
+приоритета в finding требует ссылки на priority_component_* в этом же finding.
+seed_reach_4 — число seed, ОТ которых достижим рассматриваемый узел по направленным путям;
+это не достижимость seed из узла. Входящие и исходящие переводы описывай раздельно,
+не утверждая, что исходящие переводы содержат те же средства, что входящие.
 Разделяй наблюдение и гипотезу. Не обвиняй людей и не утверждай происхождение денег.
 Путь в графе не доказывает хронологию операций или движение тех же средств.
 Учитывай ограничения: неполный inflow, только июль 2026, даты до дня, depth=4.
@@ -267,9 +275,17 @@ class OpenAIInvestigatorModel:
                        "из показанных next_checks."
                    ),
                    "verified_tool_observations": [_short_observation(item) for item in observations]}
+        final_format = deepcopy(FINAL_FORMAT)
+        visible_ids = sorted({
+            fact["evidence_id"] for item in payload["verified_tool_observations"]
+            for fact in item["evidence"]
+        })
+        if visible_ids:
+            evidence_items = final_format["schema"]["properties"]["findings"]["items"]["properties"]["evidence_ids"]["items"]
+            evidence_items["enum"] = visible_ids
         response = await self._create(
             input=[{"role": "user", "content": json.dumps(payload, ensure_ascii=False)}],
-            text={"format": FINAL_FORMAT},
+            text={"format": final_format},
         )
         try:
             draft = json.loads(response.output_text)

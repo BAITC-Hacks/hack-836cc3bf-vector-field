@@ -2,7 +2,7 @@
 
 Инструмент для AML-аналитика: определить, кого проверить первым среди участников наблюдаемой транзакционной сети, и проверить основания на графе.
 
-**Текущий статус:** pipeline создаёт три CSV и `snapshot.json` из исходных Parquet; FastAPI и React читают один live snapshot. Четыре read-only инструмента Investigator подключены к тем же in-process service-функциям. OpenAI adapter подключён к `/api/investigate`; для живого вызова нужны `OPENAI_API_KEY` и отдельный provider smoke. Без ключа возвращается `status=unavailable`, основной экран работает.
+**Текущий статус:** pipeline создаёт три CSV и `snapshot.json` из исходных Parquet; FastAPI и React читают один live snapshot. Четыре read-only инструмента Investigator подключены к тем же in-process service-функциям. OpenAI adapter подключён к `/api/investigate`; настоящий provider smoke ranking и node profile пройден с `gpt-5.6-luna` (см. `agent/README.md`). Для живого вызова нужен `OPENAI_API_KEY`. Без ключа возвращается `status=unavailable`, основной экран работает.
 
 Предыдущий checkpoint `fbfe5e0` проверил CSV за 2,947 с на Python 3.12.10. Текущий запуск дополнительно сохраняет JSON snapshot; команды и новое измерение приведены ниже.
 
@@ -217,7 +217,7 @@ Pipeline работает batch-режимом. API загружает гото�
 
 Начальная граница исполнения — не более 6 tool calls, глубина ≤4, ограниченные результаты и общий timeout. Показанная в UI activity соответствует реальным вызовам. При отсутствии ключа или ошибке LLM карточки, поиск, граф и экспорты продолжают работать. Replay, если добавлен, явно обозначается как предыдущий результат.
 
-Для живого Investigator установите `OPENAI_API_KEY` в окружении backend; `OPENAI_MODEL` необязателен (по умолчанию `gpt-6-luna`). После создания snapshot проверьте `python -m agent.live_smoke --scenario all`. Подробности — в `agent/README.md`. Без ключа эта проверка честно останавливается, а core routes остаются доступны.
+Для живого Investigator установите `OPENAI_API_KEY` в окружении backend; `OPENAI_MODEL` необязателен (по умолчанию `gpt-5.6-luna`). После создания snapshot проверьте `python -m agent.live_smoke --scenario all`. Подробности — в `agent/README.md`. Без ключа эта проверка честно останавливается, а core routes остаются доступны.
 
 ## 10. Команда и три ветки
 

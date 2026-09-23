@@ -1,6 +1,6 @@
 # Investigator boundary
 
-Текущий статус: четыре read-only tools, общий snapshot service и HTTP route работают. `openai_model.py` подключает официальный OpenAI Responses SDK к существующему ограниченному loop. Реальный сетевой smoke требует `OPENAI_API_KEY` и пока не выполнен. Аналитическому CLI ключ не нужен.
+Текущий статус: четыре read-only tools, общий snapshot service и HTTP route работают. `openai_model.py` подключает официальный OpenAI Responses SDK к существующему ограниченному loop. Реальный сетевой smoke ranking и node profile пройден с `gpt-5.6-luna` (подробности ниже). Аналитическому CLI ключ не нужен.
 
 ## Что уже работает
 
@@ -28,8 +28,8 @@ python -m unittest discover -s agent -p 'test_*.py' -v
 
 ```powershell
 .\.venv\Scripts\python.exe -m pip install -r backend/requirements.txt
-$env:OPENAI_API_KEY = '<ключ только в локальном окружении>'
-$env:OPENAI_MODEL = 'gpt-6-luna' # необязательно, значение по умолчанию
+# OPENAI_API_KEY заранее установлен человеком в локальном окружении backend.
+$env:OPENAI_MODEL = 'gpt-5.6-luna' # необязательно, значение по умолчанию
 .\.venv\Scripts\python.exe -m uvicorn backend.app:app --host 127.0.0.1 --port 8000
 ```
 
@@ -41,3 +41,15 @@ $env:OPENAI_MODEL = 'gpt-6-luna' # необязательно, значение 
 ```
 
 Последняя команда делает настоящие model requests через существующий API над рассчитанным snapshot и требует ключа. Она проверяет tool activity, точные gid и evidence против snapshot. Проверка ссылок сама по себе не доказывает смысл произвольного текста модели; numerical facts следует показывать из возвращённых `Evidence` objects.
+
+### Проверенный live gate — 23 сентября 2026
+
+`python -m agent.live_smoke --scenario all` завершился с PASS на `gpt-5.6-luna`, snapshot `ffc9f16fa9385251100f6cf1`. Вызовы настоящего OpenAI Responses API выполнены без mocks.
+
+- Ranking: модель выбрала `rank_entities`; adapter затем выполнил три `get_entity_profile` через существующий ToolSession. Получены три findings и десять facts из snapshot.
+- Node profile: модель выбрала `get_entity_profile` для точного строкового gid; получены два findings и девять facts из snapshot.
+- Проверены точные gid, существование evidence и полное совпадение числовых facts. Текст просмотрен отдельно: priority описан как очередь проверки, роль отделена от priority, достижимость направлена от seed к узлу, происхождение средств не утверждается. В финальном прогоне выдуманных сущностей или фактов не обнаружено.
+- `all` включает только ranking и node profile. Graph/common recipients не проверялись с live provider; их существующие интеграционные проверки используют подмену внешней модели.
+- После финального live smoke повторены целевые наборы: `unittest discover -s agent -p "test_*.py" -v` — 31/31 PASS; `unittest discover -s integration -p "test_*.py" -v` — 7/7 PASS.
+
+Ранние live прогоны выявили смену event loop между запросами TestClient, смешение роли с причинами priority, неоднозначное направление seed reach и сокращённые моделью evidence IDs. Исправления ограничены контекстом TestClient, уточнениями prompt и enum точных evidence IDs в существующем structured output провайдера. Backend по-прежнему проверяет facts; Transport Contract v1, tools и расчёты не менялись. Это smoke двух сценариев, не гарантия корректности любого свободного текста.
