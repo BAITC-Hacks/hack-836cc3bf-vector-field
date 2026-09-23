@@ -1,6 +1,8 @@
 # HackAlem frontend
 
-Один React/Vite/TypeScript экран для сценария `вопрос Investigator → проверяемые факты → узел/граф`, сохраняя очередь, поиск и dossier.
+Один React/Vite/TypeScript экран для сценария `очередь → выбранный узел → основания и граф → вопрос Investigator`.
+
+Финальный UX pass: [проверки и сценарий демо](FINAL_UX_GATE.md). При открытии выбран первый узел рассчитанной очереди; приоритет и роль объясняются отдельно. Live AI проверка этого pass отложена по согласованию с владельцем; статус unavailable проверен.
 
 ## Фактически проверенные команды
 
@@ -70,4 +72,4 @@ Vite проксирует `/api` на `http://127.0.0.1:8000`. Нужны routes
 
 - Без предварительного запуска pipeline live API вернёт `SNAPSHOT_NOT_READY`.
 - Адаптер OpenAI Responses работает при наличии `OPENAI_API_KEY`; отсутствие ключа и ошибки отображаются честным статусом. Live browser smoke покрывает ranking и профиль, а не любой возможный вопрос.
-- Исторический запуск до Stage 2 на Node 22.11 сопровождался предупреждением Vite и ручной установкой optional Windows binding Rolldown. Это не результат текущей успешной сборки на Node 24.21.0 и не обязательный шаг обычной установки.
+- На Windows с Node 22.11 в финальном UX pass `npm ci` прошёл, но пропустил optional binding Rolldown; потребовалось `npm.cmd install --no-save --no-package-lock @rolldown/binding-win32-x64-msvc@1.2.9`. Затем сборка прошла. Vite требует Node 20.19+ или 22.12+; успешный Stage 2 запуск на Node 24.21.0 описан выше. Перед `npm ci` остановите Vite, чтобы Windows освободила native module.
