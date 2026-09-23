@@ -2,23 +2,15 @@
 
 Инструмент для AML-аналитика: определить, кого проверить первым среди участников наблюдаемой транзакционной сети, и проверить основания на графе.
 
-**Текущий статус:** в `main` работают детерминированный pipeline, роли/приоритеты для всех 2248 узлов и три заполненных CSV. Код read-only Investigator и проверки evidence подготовлены; реальной модели нет. JSON snapshot и FastAPI ещё не реализованы. React-экран опубликован отдельно в `codex/frontend` и пока работает на учебных fixtures, поэтому полный сценарий в браузере ещё не готов.
+**Текущий статус интеграционной ветки:** pipeline создаёт три CSV и `snapshot.json` из исходных Parquet; FastAPI и React читают один live snapshot. Четыре read-only инструмента Investigator подключены к тем же in-process service-функциям. Реальный model adapter пока не подключён: `/api/investigate` честно возвращает `status=unavailable`, основной экран работает.
 
-**Быстрый запуск CSV (Windows PowerShell, из корня репозитория):**
-
-```powershell
-python -m venv .venv
-.\.venv\Scripts\python.exe -m pip install -r pipeline\requirements.txt
-.\.venv\Scripts\python.exe -m pipeline --data 'case/data (1)/data' --out pipeline/out
-```
-
-Результаты: `pipeline/out/nodes_roles.csv`, `pipeline/out/clusters.csv`, `pipeline/out/top_nodes.csv`. В проверенном запуске на Python 3.12.10 расчёт после установки зависимостей занял 2,947 секунды. Ключ LLM не нужен. Подробности, версии библиотек и команды для macOS/Linux — в `pipeline/README.md`.
+Предыдущий checkpoint `fbfe5e0` проверил CSV за 2,947 с на Python 3.12.10. Текущий запуск дополнительно сохраняет JSON snapshot; команды и новое измерение приведены ниже.
 
 ## С чего начать команде
 
 История первого рабочего блока: `docs/STAGE_01_PROMPTS.md`. Текущие команды запуска и состояние реализации описаны здесь и в README модулей.
 
-Контракт v1 и синтетические примеры: `docs/API_CONTRACT.md`, `shared/contracts.ts`, `shared/fixtures.json`. HTTP/Pydantic реализация ещё не выполнена. Расписание в `docs/EXECUTION_PLAN_270_MIN.md` хранится как план этапов, а не актуальный таймер.
+Контракт v1 и синтетические примеры описаны в `docs/API_CONTRACT.md`, `shared/contracts.ts`, `shared/fixtures.json`. Исторический тайминг сохранён в `docs/EXECUTION_PLAN_270_MIN.md`.
 
 **Решения после внешнего review:** `docs/DECISIONS.md`. Концепция заморожена; нормализация v0 определена точно; карточка отдельно объясняет роль и сумму вкладов priority; coordinator отображается как структурный посредник. Новый цикл планирования и отсчёт времени не начинаются.
 
@@ -30,13 +22,11 @@ python -m venv .venv
 ## Что строим
 
 ```text
-Parquet → метрики → роли / кластеры / приоритеты → три CSV [работает]
-                                               ↓
-                                     общий JSON snapshot [следующий этап]
-                                               ↓
-                                  FastAPI → React [интеграция впереди]
-                                               ↑
-                                один Investigator [код без live модели]
+Parquet → метрики → роли / кластеры / приоритеты → три CSV + JSON snapshot
+                                                     ↓
+                                            FastAPI → React [live]
+                                                     ↑
+                         четыре read-only tools → Investigator [без model adapter]
 ```
 
 Сначала объяснимая аналитика и экран. AI подключается к готовым read-only функциям. Работа ядра не зависит от LLM API.
@@ -55,8 +45,8 @@ python analysis/audit_dataset.py
 ## Результаты и незакрытые требования
 
 - **Работает:** `nodes_roles.csv` с 2248 строками; `clusters.csv` с 105 кластерами; `top_nodes.csv` с ранжированием и причинами. Пересчёт по трём Parquet занимает менее 5 минут и не требует API key.
-- **Следующий обязательный этап:** единый snapshot и FastAPI, затем экран на реальных данных с поиском любого gid, направленным графом и карточкой.
-- **Необязательное усиление после работающего ядра:** один Investigator с реальными read-only tools. Текущие agent-тесты используют fixtures и профильную интеграцию в памяти, не банковский live-сервис.
+- **Работает:** единый JSON snapshot, FastAPI, live-экран с поиском любого gid, направленным графом и карточкой.
+- **Осталось:** model adapter для Investigator и проверка запуска на втором ноутбуке/macOS. Четыре read-only tools уже проверены на реальных Parquet.
 
 ## Ограничения
 
@@ -92,13 +82,13 @@ python analysis/audit_dataset.py
 | `docs/BUILD_BRIEF.md` | Scope, правила v0, контракт, план, rubric и demo | План реализации |
 | `docs/RED_TEAM_REVIEW.md` | Обоснование решений, аудит, примеры и market check | Проведённый review |
 | `analysis/` | Воспроизводимая проверка данных и исследовательские результаты | Работает; не является продуктовым pipeline |
-| `pipeline/` | Расчёты, scoring, clustering и три CSV | Работает; Windows run и тесты пройдены |
-| `backend/` | FastAPI и доступ к общему snapshot | Ещё не реализован |
-| `frontend/` | React/Vite: список, граф, карточка | Опубликован в `codex/frontend`, пока на fixtures; не включён в `main` |
-| `agent/` | Read-only tools, ограничения и проверка ответа | Контур и тесты готовы; live provider/модель не подключены |
-| `shared/` | Общие TypeScript-типы и синтетические request/response fixtures v1 | Созданы; runtime API ещё требуется |
+| `pipeline/` | Расчёты, scoring, clustering, CSV и JSON snapshot | Работает на исходных Parquet |
+| `backend/` | FastAPI и общий read-only snapshot service | Работает локально |
+| `frontend/` | React/Vite: список, граф, карточка и AI-панель | Работает с live API; fixture включается явно |
+| `agent/` | Один Investigator, tools и проверка ответа | Четыре live tools проверены; model adapter отсутствует |
+| `shared/` | TypeScript-типы и синтетические fixtures v1 | Contract v1 не менялся |
 
-Реальные команды для каждого доступного модуля находятся в его README. Fixture-экран и агентный smoke-тест не заменяют проверку полного продукта на исходных данных.
+Реальные команды для каждого модуля находятся в его README. Live-экран и сервис проверены на исходных данных; fixture-режим остаётся учебным.
 
 ## 3. Входные данные и проверенные особенности
 
@@ -172,12 +162,12 @@ python analysis/audit_dataset.py
     ↓ признаки + компоненты + сообщества
 Версионированные правила ролей и приоритета
     ↓ объяснения + ограничения + summaries
-Три CSV [работает] → единый snapshot [планируется]
-    ├── API → priority list / graph / dossier [планируется]
-    └── read-only tools → Investigator → UI [контур без live provider]
+Три CSV + единый JSON snapshot [работает]
+    ├── API → priority list / graph / dossier [работает]
+    └── read-only tools → Investigator → UI [tools работают; AI unavailable]
 ```
 
-Pipeline работает batch-режимом. Будущий API должен загружать один готовый snapshot и обслуживать запросы без повторного расчёта. Frontend должен показывать серверные показатели, даже когда отображает только часть графа.
+Pipeline работает batch-режимом. API загружает готовый snapshot один раз при старте и обслуживает запросы без повторного расчёта. Frontend показывает серверные показатели, даже когда отображает только часть графа.
 
 Для MVP достаточно pandas/NetworkX, FastAPI/Pydantic и React/Vite. Графовая БД, RAG, отдельное хранилище векторов, orchestration engine и обучение ML не входят в scope. Один Investigator не является обязательной зависимостью аналитического CLI.
 
@@ -201,7 +191,7 @@ Pipeline работает batch-режимом. Будущий API должен 
 
 ## 8. Предлагаемый API и согласование контрактов
 
-Это спецификация интерфейса, а не список уже работающих routes. Типы и fixtures v1 находятся в shared/, точная семантика и ошибки — в docs/API_CONTRACT.md. Runtime-схемы реализует backend-владелец по этому контракту. При расхождении краткого описания здесь и transport v1 использовать v1.
+Работающие routes читают `pipeline/out/snapshot.json`. Типы и fixtures v1 находятся в shared/, точная семантика и ошибки — в docs/API_CONTRACT.md. При расхождении краткого описания здесь и transport v1 использовать v1.
 
 | Route | Назначение |
 |---|---|
@@ -215,7 +205,7 @@ Pipeline работает batch-режимом. Будущий API должен 
 
 Обязательные договорённости: gid/src/dst — строки; scores — числа; даты — ISO; отсутствие значения — null; NaN/Infinity запрещены. Пустое окружение изолята — валидный результат. Неизвестный gid — понятный 404. Урезанный подграф возвращает `truncated` и `omitted_count`.
 
-До параллельной интеграции нужны fixtures для обычного узла, изолята, depth=4, урезанного подграфа и ошибки AI. Нурасыл определяет семантику, Даулет реализует схемы, Аки и agent-владелец используют те же имена полей. Изменение контракта синхронизируется между всеми потребителями.
+Синтетические fixtures сохранены для учебного режима. Live-ответы и четыре tools проверяются интеграционными тестами по исходным Parquet. Contract v1 не менялся.
 
 ## 9. Роль Investigator
 
@@ -251,33 +241,36 @@ git switch codex/agent
 
 ## 11. Запуск: что доступно сейчас
 
-Продуктовый CSV pipeline запускается без AI key. Для изолированного окружения без активации shell:
+Рабочий запуск из корня репозитория. Нужны Python 3.12 и Node.js 22.12+ (или 20.19+). API key не нужен.
 
 Windows PowerShell:
 
 ```powershell
 python -m venv .venv
-.\.venv\Scripts\python.exe -m pip install -r pipeline\requirements.txt
+.\.venv\Scripts\python.exe -m pip install -r backend/requirements.txt
 .\.venv\Scripts\python.exe -m pipeline --data 'case/data (1)/data' --out pipeline/out
-.\.venv\Scripts\python.exe -m unittest pipeline.test_pipeline integration.test_pipeline_agent -v
-.\.venv\Scripts\python.exe -m unittest discover -s agent -p 'test_*.py' -v
+cd frontend
+npm.cmd ci
+npm.cmd run build
+cd ..
+.\.venv\Scripts\python.exe -m uvicorn backend.app:app --host 127.0.0.1 --port 8000
 ```
 
 macOS/Linux:
 
 ```bash
 python3 -m venv .venv
-.venv/bin/python -m pip install -r pipeline/requirements.txt
+.venv/bin/python -m pip install -r backend/requirements.txt
 .venv/bin/python -m pipeline --data 'case/data (1)/data' --out pipeline/out
-.venv/bin/python -m unittest pipeline.test_pipeline integration.test_pipeline_agent -v
-.venv/bin/python -m unittest discover -s agent -p 'test_*.py' -v
+cd frontend && npm ci && npm run build && cd ..
+.venv/bin/python -m uvicorn backend.app:app --host 127.0.0.1 --port 8000
 ```
 
-Проверенная среда интеграционного запуска — Python 3.12.10 на Windows, зависимости зафиксированы в `pipeline/requirements.txt`. Прошли 3 теста pipeline, 24 теста agent и 2 интеграционных smoke-теста. На macOS/Linux команды приведены для повторения, но запуск там пока не подтверждён.
+Открыть `http://127.0.0.1:8000`. Выходы: `pipeline/out/nodes_roles.csv`, `clusters.csv`, `top_nodes.csv`, `snapshot.json`. Проверено на Windows с Python 3.12.6: 2248 узлов, 19 изолятов, 105 кластеров, полный pipeline со snapshot за 7.171 с после установки зависимостей. macOS/Linux пока не проверены.
 
-Исследовательский аудит отдельно описан в `analysis/README.md`; его метрики не заменяют финальные CSV. Команд запуска FastAPI или live UI здесь пока нет, потому что соответствующая интеграция ещё не реализована.
+Проверка: `.\.venv\Scripts\python.exe -m unittest pipeline.test_pipeline -v`, `.\.venv\Scripts\python.exe -m unittest discover -s agent -p 'test_*.py' -v`, `.\.venv\Scripts\python.exe -m unittest discover -s integration -p 'test_*.py' -v`, `npm.cmd run build` в `frontend/`. Для учебного UI отдельно задать `VITE_DATA_PROVIDER=fixture`; его scores синтетические.
 
-Обязательное ядро не требует `.env` и не импортирует AI-зависимости. Реальный model adapter пока не подключён; не создавайте ключ ради запуска CSV.
+Реальная модель для Investigator пока не подключена. Не добавляйте ключ в репозиторий. API/CSV/UI работают при отсутствии ключа.
 
 ## 12. Приоритеты и контроль времени
 
@@ -291,17 +284,17 @@ python3 -m venv .venv
 
 - [x] Все 2248 исходных gid представлены ровно один раз, включая 19 изолятов.
 - [x] Согласованы ключи, суммы и n_tx между transactions и edges.
-- [ ] ID проходят Python → JSON → browser → API без изменения.
+- [x] ID проходят Python → JSON → browser → API без изменения.
 - [x] Роли допустимы; scores конечны и в [0,1]; evidence числовой и ≤200 символов.
 - [x] Каждый cluster_id существует; суммы размеров кластеров и seed совпадают с исходными.
 - [x] Top содержит ≥20 уникальных gid, правильную сортировку и объяснение приоритета.
 - [x] Depth=4 не получает terminal; ограничения данных указаны.
 - [x] Один запуск создаёт три CSV за <5 минут без LLM key и ручных шагов.
 - [x] Повторный запуск с теми же данными/config даёт те же аналитические CSV.
-- [ ] Любой gid, изолят и узел из небольшой компоненты находятся в UI.
-- [ ] AI failure не ломает основной экран и экспорты.
-- [x] README содержит проверенные команды для CSV и честно обозначает отсутствующие API/UI команды.
-- [ ] Запуск на втором ноутбуке и доступный UI подтверждены.
+- [x] Произвольный gid, изолят и depth=4 найдены в live UI; небольшая компонента отдельно не проверялась.
+- [x] AI unavailable не ломает основной экран; обработка model failure покрыта agent-тестом.
+- [x] README содержит проверенные команды для CSV, snapshot, API и UI.
+- [ ] Запуск на втором ноутбуке/macOS подтверждён.
 
 Без ground truth не публикуем accuracy/F1. Проверяем смысловые инварианты, объяснимость случайных узлов и чувствительность top-list к настройкам. Выполненные проверки фиксируются владельцами, а не предполагаются по наличию тестовых файлов.
 

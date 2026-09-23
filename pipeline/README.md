@@ -1,6 +1,6 @@
 # Pipeline v0
 
-Один запуск читает три Parquet, проверяет схему и согласованность агрегатов, затем создаёт три CSV в официальной схеме. API и JSON snapshot подключаются на следующем этапе. Ключ LLM не нужен.
+Один запуск читает три Parquet, проверяет схему и согласованность агрегатов, затем создаёт три CSV в официальной схеме и `snapshot.json` для API/Investigator. Ключ LLM не нужен.
 
 Проверено на Python 3.12.6 в Windows PowerShell:
 
@@ -19,9 +19,9 @@ python3 -m venv .venv
 .venv/bin/python -m pipeline --data 'case/data (1)/data' --out pipeline/out
 ```
 
-Запускать из корня репозитория. `--data` принимает любую папку с `nodes.parquet`, `edges.parquet`, `transactions.parquet`; `--out` принимает папку для CSV. Пути с пробелами заключать в кавычки. По умолчанию используются папки кейса и `pipeline/out`. Результаты: `pipeline/out/nodes_roles.csv`, `pipeline/out/clusters.csv`, `pipeline/out/top_nodes.csv`. Каталог `pipeline/out` исключён из Git.
+Запускать из корня репозитория. `--data` принимает любую папку с `nodes.parquet`, `edges.parquet`, `transactions.parquet`; `--out` принимает папку для результатов. Пути с пробелами заключать в кавычки. По умолчанию используются папки кейса и `pipeline/out`. Результаты: `pipeline/out/nodes_roles.csv`, `pipeline/out/clusters.csv`, `pipeline/out/top_nodes.csv`, `pipeline/out/snapshot.json`. Каталог `pipeline/out` исключён из Git.
 
-Последний проверенный Windows запуск: 4.823 секунды после установки зависимостей; 2248 узлов, 3119 рёбер, 4840 транзакций, 35 слабосвязных компонент, 19 изолятов, 105 кластеров. Повторный запуск дал одинаковые SHA-256 всех трёх CSV.
+Последний проверенный Windows запуск со snapshot: 7.171 секунды после установки зависимостей; 2248 узлов, 3119 рёбер, 4840 транзакций, 35 слабосвязных компонент, 19 изолятов, 105 кластеров.
 
 ## Правила
 
@@ -29,7 +29,7 @@ python3 -m venv .venv
 
 Для каждого положительного признака `p(x)=(число меньших + 0.5 × число равных)/N` среди всех положительных конечных значений по всей сети; `p(0)=0`. Роли из `docs/BUILD_BRIEF.md`: consolidator при ≥3 плательщиках; distributor при ≥10 получателях; transit при наблюдаемом отношении выхода ко входу 0.8–1.2 и ≥2 tx с обеих сторон, исключая seed и depth=4; terminal при отношении ≤0.1, входе на ≥2 датах и последнем входе до 30 июля, исключая seed и depth=4; coordinator требует вместе достижимость от ≥2 seed, betweenness не ниже 90-го квантиля положительных значений и ≥20% межкластерного incident volume. `peripheral` означает недостаточность признаков. Сила сигнала и policy-множитель роли дают `role_score`; подробные веса и пороги в `config.py`. Это эвристические баллы, не вероятность и не измеренная точность.
 
-`priority_score` — сумма шести вкладов: `0.175×p(direct_seed_senders) + 0.175×p(seed_reach_4) + 0.25×p(in_degree) + 0.20×p(max(in_kzt,out_kzt)) + 0.10×p(betweenness) + 0.10×p(out_degree)`. Все вклады остаются в структурированном evidence результата `analyze()` для будущего snapshot/API; CSV содержит краткий текст роли и объяснение топа.
+`priority_score` — сумма шести вкладов: `0.175×p(direct_seed_senders) + 0.175×p(seed_reach_4) + 0.25×p(in_degree) + 0.20×p(max(in_kzt,out_kzt)) + 0.10×p(betweenness) + 0.10×p(out_degree)`. Все вклады остаются в структурированном evidence `snapshot.json` и live API; CSV содержит краткий текст роли и объяснение топа.
 
 ## Ограничения
 
