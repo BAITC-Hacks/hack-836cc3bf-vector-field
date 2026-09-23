@@ -1,0 +1,21 @@
+{
+  "snapshot_id": "e4b834b7ab30665ff544d2e4",
+  "rules_version": "v0",
+  "contract_version": "1",
+  "python": "3.14.7",
+  "node": "24.21.0",
+  "pipeline_seconds": [
+    3.339,
+    3.073
+  ],
+  "files_sha256": {
+    "pipeline/out/nodes_roles.csv": "a91acc22a64067ed0bf38ade1b95931becae5b24ff453bc359bb1871e4d0ccf1",
+    "pipeline/out/clusters.csv": "d15c7c481688cf33783391d7c965992171c9e6ec206aa06512ecadf4bf897c17",
+    "pipeline/out/top_nodes.csv": "15514a67b2c4102221cf1a8ad1c6d584c7750be714765764f90037a090e315cf",
+    "pipeline/out/snapshot.json": "fb41bd4268b1f57c24b7ad08173a92069817c0a7a5f513dcbf07aa8631aa1256",
+    "frontend/dist/assets/index-CadcAg-t.js": "43ab68654fb72945f46a147748cd13b57b416fd4692b0415a2993bda2cde39f3",
+    "frontend/dist/assets/index-VqRsCTMg.css": "def9c8aaf9ea8799358e75f133d66b40e8059d6304fc1095143e88a0c4482183",
+    "frontend/dist/index.html": "6b795ce5891a337db526f8563c523330fb9256b3cd6f6e4bfdf54f35aa87a8a5"
+  },
+  "backup_sha256": "b551e5784c771f0680109c93e619cecef1b9010dec552fa69303f9bba48d04fa"
+}

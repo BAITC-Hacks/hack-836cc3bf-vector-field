@@ -44,7 +44,8 @@ def main() -> int:
                                static_dir=Path("no-frontend-build"))) as client:
         for scenario in scenarios:
             response = client.post("/api/investigate", json={
-                "question": questions[scenario], "selected_gids": [gid],
+                "question": questions[scenario],
+                "selected_gids": [] if scenario == "ranking" else [gid],
                 "snapshot_id": service.meta["snapshot_id"],
             })
             if response.status_code != 200:

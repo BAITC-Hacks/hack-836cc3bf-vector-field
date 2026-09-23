@@ -60,7 +60,7 @@ def _model_finding_text(finding: Mapping[str, Any], evidence: Sequence[Mapping[s
     cited = set(finding.get("evidence_ids", []))
     if not cited:
         raise ModelProtocolError("finding has no evidence citation")
-    if "приоритет" in value.casefold() and not any(
+    if any(stem in value.casefold() for stem in ("приоритет", "priorit")) and not any(
         fact.get("evidence_id") in cited
         and str(fact.get("metric", "")).startswith("priority_component_")
         for fact in evidence

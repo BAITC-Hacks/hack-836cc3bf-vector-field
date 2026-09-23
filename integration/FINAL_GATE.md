@@ -1,0 +1,82 @@
+# Submission closure — 2026-09-23
+
+Core gate: **PASS**. Final mission gate: **BLOCKED pending explicit permission for two real OpenAI demo calls and publishing the CSV/snapshot backup to the existing GitHub repository**. Automatic approval review rejected starting the real-provider demo; the action was not bypassed. No new live-model result is claimed. Historical real-provider evidence on older main remains in `STAGE2_CLOSURE.md`.
+
+Worktree branch: `codex/submission-gate`, based on `e531df0`. Main and other team worktrees were not changed. Feature freeze retained; no new analytics, routes, tools or transport fields.
+
+## Closed issues
+
+- Role predicates used in terminal/coordinator explanations now survive as structured evidence, along with role-specific counts/amounts. The UI and tools consume those exact snapshot facts. Scores, role selection, cluster assignment and all CSV bytes remain unchanged.
+- English and Russian priority claims both require priority evidence; the demonstrated English claim citing only degree is rejected. Global smoke now sends an empty selected_gids list.
+- A selected boundary node keeps its centre highlight and dashed boundary; out/in no longer has a misleading share label.
+- Python LF/CRLF differences no longer alter snapshot identity. Actual source changes and binary Parquet changes still do.
+- Added a dependency lock, one-command demo launcher, exact demo/recovery script and checked-in CSV/backup deliverables.
+
+## Evidence matrix
+
+The category numbers below identify the official rubric; they are not awarded marks or predictions.
+
+| Rubric category | Available evidence |
+|---|---|
+| 25/25 Correspondence/working | 2248 nodes, 105 clusters, 100 ranked nodes; directed graph, full-dataset search, all CSV exports |
+| 25/25 Technical | one deterministic snapshot, exact string gid, six priority facts, role predicate evidence, bounded read-only agent, regression suite |
+| 25/25 README/reproducibility | clean venv install, pinned lock, repeated/isolated-source CLI, newline invariance, tested backup restoration |
+| 15/15 Value | priority → role/evidence → graph → next checks; isolate and boundary explained without overclaiming |
+| 10/10 Potential/originality | observable-data limitations and documented ~1M-node scaling path; no unsupported accuracy/ROI claim |
+
+## Commands and results
+
+Windows, Python 3.14.7, Node 24.21.0. Dependencies installed into a new `.venv` with `pip install -r backend/requirements.txt`; resolved versions recorded in `requirements-lock.txt`, reinstallation/check passed. `npm.cmd ci` passed, 0 reported vulnerabilities; `npm.cmd run build` passed after final frontend changes.
+
+| Command (using .venv Python from repository root) | Result |
+|---|---|
+| `python -m pipeline --data "case/data (1)/data" --out pipeline/out` without key | 3.339s and 3.073s; all four files byte-identical |
+| `python -m unittest pipeline.test_pipeline -v` | 4 PASS |
+| `python -m unittest discover -s agent -p "test_*.py" -v` | 32 PASS |
+| `python -m unittest backend.test_openai_model -v` | 2 PASS; real SDK, mocked network |
+| `python -m unittest discover -s integration -p "test_*.py" -v` | 14 PASS; real Parquet, mocked model where applicable |
+| `npm.cmd run build` (frontend) | PASS, TypeScript and production Vite |
+| Restore backup to empty temporary directory | checksums, built UI, summary, all export bytes, AI unavailable PASS |
+
+Isolated-source reproduction copied tracked current sources/data into a fresh directory, stripped API key and Python path overrides, asserted imports came from that directory and CLI imported no agent/OpenAI modules. With all Python sources deliberately converted to CRLF: 2.882s and byte-identical CSV/snapshot. This is a same-machine cold-source test; another physical laptop/macOS was unavailable.
+
+Actual staged Git checkout with `core.autocrlf=true` into a fresh directory also passed: 3.250s; Python became CRLF, submitted CSVs stayed LF, all generated artifacts and backup matched the manifest.
+
+Negative data check: corrupting one edge sum by 0.01 KZT exits 2 with a clear aggregate mismatch; no success output, existing verified artifacts preserved.
+
+Combined final run of all modules: **52 tests PASS in 13.283s**. Final port 8000 summary and all three HTTP export hashes match the manifest.
+
+## Dataset/contract gates
+
+2248/3119/4840 nodes/edges/transactions; 35 weak components (16 with edges), 19 isolates, 444 depth=4 nodes, 105 clusters. All 97 repeated transaction rows preserved; exact total 36589001201 tiyn. CSV rows 2248/105/100, finite scores, exact coverage/sorting, short numeric evidence, cluster membership/internal sums, boundary exclusion from terminal and six priority contributions verified. Strict JSON, exact string IDs in all nested fields and null ratio for zero inflow passed. Contract version 1 and analytical rules v0 unchanged; additional Evidence metric names fit the existing schema.
+
+Snapshot `e4b834b7ab30665ff544d2e4`. Full artifact SHA-256 values are in `submission/manifest.json`.
+
+## Browser evidence
+
+Actual built React + Uvicorn + real pipeline snapshot, no fixture success response. Final server uses port 8000 with `scripts/demo.py --no-ai`; initial behavioral browser checks used port 8014 before the source-newline-only metadata fix.
+
+| Scenario | Observed |
+|---|---|
+| Global question | honest AI unavailable without key; no invented findings. Real provider blocked by approval review |
+| Exact node | `100000003115284100`: exact dossier, 8 senders/15 input tx/2160500 KZT, 10 graph nodes/11 directed edges |
+| Finding → graph | existing integration/source checks only in this session; current real browser finding requires permitted live-model run |
+| Isolate | `100000000456947100`: full card, 0 links, null ratio, data-gap explanation |
+| Boundary | `100000000018102100`: depth=4/peripheral, limitation visible, 2 nodes/1 edge |
+| Other component | `100000002578405100`: distributor, 116 recipients, 117 ego nodes/118 edges; component size 270 verified independently |
+| Unknown | `999999999999999999`: ENTITY_NOT_FOUND in card/graph, no stale substitute |
+| Truncation | limit=2: 8 hidden nodes/10 hidden edges; expand returns 10 nodes/11 edges |
+| Exports | all three browser downloads; HTTP bytes equal pipeline SHA-256 |
+| Visual | arrows, node labels, selected centre and role legend inspected in screenshot |
+
+## Secrets and limits
+
+Pattern audit: 93 tracked files (90 text/3 Parquet) and 32 locally reachable commits/176 distinct blobs (173 text) before closure commit. No confirmed tokens, private keys, JWT/Bearer literals, credential URLs or tracked `.env`/cache/dependencies. Historical broad assignment candidates were documentation placeholders. The backup is built from an explicit artifact/UI allowlist and contains no environment files or model responses. All 20 staged closure files, including each backup archive member, were additionally checked for token/private-key patterns and prohibited environment/dependency paths; no findings. This is a scoped pattern audit, not a guarantee about ignored files, dangling history or arbitrary binary contents.
+
+Known limitations: July 2026, intrabank ≥5000 KZT, incomplete inflow, depth/day/period censoring; heuristic scores; no ground truth; free-text semantic validation remains partial. Model/provider latency and availability are external. A second physical device and macOS were not available. Output replacement is per-file; avoid recalculation while serving a snapshot and use the checked backup after a disk/lock failure.
+
+Deferred P2: ~718 kB frontend bundle; queue/graph result caps and no dedicated clear-selection control; explicit Pydantic response models; stronger free-text semantics. No scope-expanding fixes were made.
+
+## Demo and publication
+
+Commands, first question, exact nodes, solution diagram and 5-minute sequence: `docs/DEMO.md`. Backup: `submission/backup.zip`. Main is left as the team integration base. The finished closure is committed locally on its feature branch. Automatic approval review rejected a combined commit/push action because publishing the derived financial-network artifacts requires explicit payload/destination consent; that rejected command did not execute. A separate local commit preserves the reviewable result. Push remains blocked; the final task response records the actual commit. No judge portal/destination was supplied, so no external contest submission is claimed.

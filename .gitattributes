@@ -1,0 +1,3 @@
+# Submission CSV checksums must survive Windows checkout unchanged.
+submission/*.csv text eol=lf
+submission/backup.zip binary

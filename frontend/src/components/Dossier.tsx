@@ -247,7 +247,7 @@ export function Dossier({ state }: Props) {
             <dd>{entity.metrics.out_tx}</dd>
           </div>
           <div>
-            <dt>Доля прохода</dt>
+            <dt>Наблюдаемый out/in</dt>
             <dd className={entity.metrics.pass_through === null ? 'no-data-inline' : ''}>
               {entity.metrics.pass_through === null ? 'нет данных' : formatScore(entity.metrics.pass_through)}
             </dd>

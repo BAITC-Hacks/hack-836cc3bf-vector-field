@@ -74,11 +74,12 @@ const GRAPH_STYLE = [
     },
   },
   { selector: 'node[?isSeed]', style: { 'border-width': 4, 'border-color': '#fbbf24' } },
-  { selector: 'node[?isCenter]', style: { 'border-width': 4, 'border-color': '#38bdf8' } },
   {
     selector: 'node[?boundary]',
     style: { 'border-style': 'dashed', 'border-width': 4, 'border-color': '#fb923c' },
   },
+  // Preserve the boundary dash while keeping the selected centre visibly highlighted.
+  { selector: 'node[?isCenter]', style: { 'border-width': 4, 'border-color': '#38bdf8' } },
   { selector: 'node:selected', style: { 'border-width': 5, 'border-color': '#f472b6' } },
   {
     selector: 'edge',

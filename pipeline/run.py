@@ -323,6 +323,33 @@ def analyze(nodes: pd.DataFrame, edges: pd.DataFrame, tx: pd.DataFrame) -> Analy
             fact(gid, "in_degree", m["in_degree"], "count", rule_id, "edges.parquet", f"Наблюдаемых отправителей: {m['in_degree']}", limitations),
             fact(gid, "out_degree", m["out_degree"], "count", rule_id, "edges.parquet", f"Наблюдаемых получателей: {m['out_degree']}", limitations),
         ]
+        # Keep the numeric predicates used by the short role explanation in the
+        # same structured evidence consumed by the dossier and Investigator.
+        role_metrics = {
+            "consolidator": ("in_tx", "in_kzt"),
+            "distributor": ("out_tx", "out_kzt"),
+            "transit": ("in_kzt", "out_kzt", "in_tx", "out_tx", "pass_through"),
+            "terminal": ("in_kzt", "pass_through", "in_dates", "last_in_day"),
+            "coordinator": ("seed_reach_4", "betweenness", "cross_cluster_volume", "coordinator_betweenness_cutoff"),
+            "peripheral": ("depth",),
+        }
+        role_values = {
+            "in_tx": (m["in_tx"], "count", "edges.parquet", f"Наблюдаемых входящих операций: {m['in_tx']}"),
+            "out_tx": (m["out_tx"], "count", "edges.parquet", f"Наблюдаемых исходящих операций: {m['out_tx']}"),
+            "in_kzt": (m["in_cents"] / 100, "KZT", "edges.parquet", f"Наблюдаемый вход: {kzt(m['in_cents'])} KZT"),
+            "out_kzt": (m["out_cents"] / 100, "KZT", "edges.parquet", f"Наблюдаемый выход: {kzt(m['out_cents'])} KZT"),
+            "pass_through": (ratio, "ratio", "derived", "Отношение наблюдаемого выхода к входу; не баланс и не доля тех же денег"),
+            "in_dates": (m["in_dates"], "count", "transactions.parquet", f"Различных дат наблюдаемых входящих операций: {m['in_dates']}"),
+            "last_in_day": (m["last_in_day"], "count", "transactions.parquet", f"Последний день наблюдаемого входа в июле 2026: {m['last_in_day']}"),
+            "seed_reach_4": (m["seed_reach_4"], "count", "derived", f"Достижим по направленным путям до 4 рёбер от {m['seed_reach_4']} seed"),
+            "betweenness": (m["betweenness"], "ratio", "derived", "Betweenness направленного невзвешенного графа"),
+            "cross_cluster_volume": (m["cross_cluster_volume"], "ratio", "derived", "Доля входящего и исходящего объёма между рассчитанными сообществами"),
+            "coordinator_betweenness_cutoff": (coordinator_cutoff, "ratio", "derived", "Порог допуска coordinator: quantile 0.9 положительной betweenness"),
+            "depth": (depth, "count", "nodes.parquet", f"Минимальная глубина от seed: {depth}"),
+        }
+        for metric in role_metrics[role]:
+            value, unit, source, description = role_values[metric]
+            evidence.append(fact(gid, metric, value, unit, rule_id, source, description, limitations))
         if m["in_tx"] + m["out_tx"] == 1 and scored:
             evidence.append(fact(gid, "role_score_cap", cfg.SINGLE_TX_CAP, "ratio", rule_id, "derived", "Одна наблюдаемая транзакция ограничивает оценку роли", limitations))
         for name in cfg.PRIORITY_WEIGHTS:
