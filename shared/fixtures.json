@@ -1,0 +1,801 @@
+{
+  "_notice": "ALL DATA SYNTHETIC. Contract/UI fixtures only. Scores, graph depths and tool timings are illustrative, not case results or actual tool runs. This is not a dataset for testing scoring rules.",
+  "summary": {
+    "meta": {
+      "contract_version": "1",
+      "snapshot_id": "fixture-v1",
+      "rules_version": "illustrative-only",
+      "data_mode": "fixture"
+    },
+    "period": {
+      "from": "2026-07-01",
+      "to": "2026-07-31"
+    },
+    "counts": {
+      "n_nodes": 6,
+      "n_edges": 4,
+      "n_transactions": 4,
+      "n_seed": 2,
+      "n_components": 2,
+      "n_components_with_edges": 1,
+      "n_isolates": 1,
+      "n_depth_truncated": 1,
+      "n_clusters": 2
+    },
+    "total_observed_kzt": 75000,
+    "limitations": [
+      "inflow_incomplete",
+      "threshold_5000",
+      "intrabank_only",
+      "date_only"
+    ],
+    "top_nodes": [
+      {
+        "gid": "900000000000000001",
+        "depth": 2,
+        "is_seed": false,
+        "role": "consolidator",
+        "role_score": 0.7,
+        "priority_score": 0.75,
+        "cluster_id": 0,
+        "evidence": "Учебный пример интерфейса; не результат анализа кейса.",
+        "why": "Учебный приоритет для проверки интерфейса.",
+        "limitations": [
+          "inflow_incomplete"
+        ]
+      },
+      {
+        "gid": "900000000000000002",
+        "depth": 0,
+        "is_seed": true,
+        "role": "peripheral",
+        "role_score": 0.15,
+        "priority_score": 0.1,
+        "cluster_id": 0,
+        "evidence": "Учебный пример интерфейса; не результат анализа кейса.",
+        "why": "Учебный приоритет для проверки интерфейса.",
+        "limitations": [
+          "inflow_incomplete"
+        ]
+      },
+      {
+        "gid": "900000000000000003",
+        "depth": 1,
+        "is_seed": false,
+        "role": "peripheral",
+        "role_score": 0.15,
+        "priority_score": 0.1,
+        "cluster_id": 0,
+        "evidence": "Учебный пример интерфейса; не результат анализа кейса.",
+        "why": "Учебный приоритет для проверки интерфейса.",
+        "limitations": [
+          "inflow_incomplete"
+        ]
+      },
+      {
+        "gid": "900000000000000004",
+        "depth": 1,
+        "is_seed": false,
+        "role": "peripheral",
+        "role_score": 0.15,
+        "priority_score": 0.1,
+        "cluster_id": 0,
+        "evidence": "Учебный пример интерфейса; не результат анализа кейса.",
+        "why": "Учебный приоритет для проверки интерфейса.",
+        "limitations": [
+          "inflow_incomplete"
+        ]
+      },
+      {
+        "gid": "900000000000000005",
+        "depth": 4,
+        "is_seed": false,
+        "role": "peripheral",
+        "role_score": 0.15,
+        "priority_score": 0.1,
+        "cluster_id": 0,
+        "evidence": "Учебный пример интерфейса; не результат анализа кейса.",
+        "why": "Учебный приоритет для проверки интерфейса.",
+        "limitations": [
+          "depth_truncated",
+          "inflow_incomplete",
+          "insufficient_evidence"
+        ]
+      },
+      {
+        "gid": "900000000000000006",
+        "depth": 0,
+        "is_seed": true,
+        "role": "peripheral",
+        "role_score": 0.05,
+        "priority_score": 0,
+        "cluster_id": 1,
+        "evidence": "Учебный пример интерфейса; не результат анализа кейса.",
+        "why": "Учебный приоритет для проверки интерфейса.",
+        "limitations": [
+          "isolated_seed",
+          "insufficient_evidence"
+        ]
+      }
+    ]
+  },
+  "entity": {
+    "meta": {
+      "contract_version": "1",
+      "snapshot_id": "fixture-v1",
+      "rules_version": "illustrative-only",
+      "data_mode": "fixture"
+    },
+    "entity": {
+      "gid": "900000000000000001",
+      "depth": 2,
+      "is_seed": false,
+      "role": "consolidator",
+      "role_score": 0.7,
+      "priority_score": 0.75,
+      "cluster_id": 0,
+      "why": "Учебный приоритет для проверки интерфейса.",
+      "limitations": [
+        "inflow_incomplete"
+      ],
+      "evidence_text": "Учебный пример интерфейса; не результат анализа кейса.",
+      "metrics": {
+        "in_degree": 3,
+        "out_degree": 1,
+        "in_kzt": 60000,
+        "out_kzt": 15000,
+        "in_tx": 3,
+        "out_tx": 1,
+        "pass_through": 0.25,
+        "direct_seed_senders": 1,
+        "seed_reach_4": 1,
+        "betweenness": 0.0
+      },
+      "evidence": [
+        {
+          "evidence_id": "node:900000000000000001:in_degree:v1",
+          "gid": "900000000000000001",
+          "metric": "in_degree",
+          "value": 3,
+          "unit": "count",
+          "rule_id": "fixture_only",
+          "source": "derived",
+          "scope": "synthetic_fixture",
+          "text": "В учебном профиле 3 наблюдаемых отправителей.",
+          "limitations": [
+            "inflow_incomplete"
+          ]
+        }
+      ],
+      "secondary_roles": [],
+      "next_checks": [
+        "Проверить полноту наблюдаемых переводов."
+      ]
+    }
+  },
+  "entity_isolate": {
+    "meta": {
+      "contract_version": "1",
+      "snapshot_id": "fixture-v1",
+      "rules_version": "illustrative-only",
+      "data_mode": "fixture"
+    },
+    "entity": {
+      "gid": "900000000000000006",
+      "depth": 0,
+      "is_seed": true,
+      "role": "peripheral",
+      "role_score": 0.05,
+      "priority_score": 0,
+      "cluster_id": 1,
+      "why": "Учебный приоритет для проверки интерфейса.",
+      "limitations": [
+        "isolated_seed",
+        "insufficient_evidence"
+      ],
+      "evidence_text": "Учебный пример интерфейса; не результат анализа кейса.",
+      "metrics": {
+        "in_degree": 0,
+        "out_degree": 0,
+        "in_kzt": 0,
+        "out_kzt": 0,
+        "in_tx": 0,
+        "out_tx": 0,
+        "pass_through": null,
+        "direct_seed_senders": 0,
+        "seed_reach_4": 0,
+        "betweenness": 0.0
+      },
+      "evidence": [
+        {
+          "evidence_id": "node:900000000000000006:in_degree:v1",
+          "gid": "900000000000000006",
+          "metric": "in_degree",
+          "value": 0,
+          "unit": "count",
+          "rule_id": "fixture_only",
+          "source": "derived",
+          "scope": "synthetic_fixture",
+          "text": "В учебном профиле 0 наблюдаемых отправителей.",
+          "limitations": [
+            "isolated_seed",
+            "insufficient_evidence"
+          ]
+        }
+      ],
+      "secondary_roles": [],
+      "next_checks": [
+        "Уточнить причину отсутствия наблюдаемых операций."
+      ]
+    }
+  },
+  "entity_boundary": {
+    "meta": {
+      "contract_version": "1",
+      "snapshot_id": "fixture-v1",
+      "rules_version": "illustrative-only",
+      "data_mode": "fixture"
+    },
+    "entity": {
+      "gid": "900000000000000005",
+      "depth": 4,
+      "is_seed": false,
+      "role": "peripheral",
+      "role_score": 0.15,
+      "priority_score": 0.1,
+      "cluster_id": 0,
+      "why": "Учебный приоритет для проверки интерфейса.",
+      "limitations": [
+        "depth_truncated",
+        "inflow_incomplete",
+        "insufficient_evidence"
+      ],
+      "evidence_text": "Учебный пример интерфейса; не результат анализа кейса.",
+      "metrics": {
+        "in_degree": 1,
+        "out_degree": 0,
+        "in_kzt": 15000,
+        "out_kzt": 0,
+        "in_tx": 1,
+        "out_tx": 0,
+        "pass_through": 0.0,
+        "direct_seed_senders": 1,
+        "seed_reach_4": 1,
+        "betweenness": 0.0
+      },
+      "evidence": [
+        {
+          "evidence_id": "node:900000000000000005:in_degree:v1",
+          "gid": "900000000000000005",
+          "metric": "in_degree",
+          "value": 1,
+          "unit": "count",
+          "rule_id": "fixture_only",
+          "source": "derived",
+          "scope": "synthetic_fixture",
+          "text": "В учебном профиле 1 наблюдаемых отправителей.",
+          "limitations": [
+            "depth_truncated",
+            "inflow_incomplete",
+            "insufficient_evidence"
+          ]
+        }
+      ],
+      "secondary_roles": [],
+      "next_checks": [
+        "Запросить исходящие следующего колена."
+      ]
+    }
+  },
+  "entities": {
+    "meta": {
+      "contract_version": "1",
+      "snapshot_id": "fixture-v1",
+      "rules_version": "illustrative-only",
+      "data_mode": "fixture"
+    },
+    "items": [
+      {
+        "gid": "900000000000000001",
+        "depth": 2,
+        "is_seed": false,
+        "role": "consolidator",
+        "role_score": 0.7,
+        "priority_score": 0.75,
+        "cluster_id": 0,
+        "evidence": "Учебный пример интерфейса; не результат анализа кейса.",
+        "why": "Учебный приоритет для проверки интерфейса.",
+        "limitations": [
+          "inflow_incomplete"
+        ]
+      },
+      {
+        "gid": "900000000000000002",
+        "depth": 0,
+        "is_seed": true,
+        "role": "peripheral",
+        "role_score": 0.15,
+        "priority_score": 0.1,
+        "cluster_id": 0,
+        "evidence": "Учебный пример интерфейса; не результат анализа кейса.",
+        "why": "Учебный приоритет для проверки интерфейса.",
+        "limitations": [
+          "inflow_incomplete"
+        ]
+      },
+      {
+        "gid": "900000000000000003",
+        "depth": 1,
+        "is_seed": false,
+        "role": "peripheral",
+        "role_score": 0.15,
+        "priority_score": 0.1,
+        "cluster_id": 0,
+        "evidence": "Учебный пример интерфейса; не результат анализа кейса.",
+        "why": "Учебный приоритет для проверки интерфейса.",
+        "limitations": [
+          "inflow_incomplete"
+        ]
+      },
+      {
+        "gid": "900000000000000004",
+        "depth": 1,
+        "is_seed": false,
+        "role": "peripheral",
+        "role_score": 0.15,
+        "priority_score": 0.1,
+        "cluster_id": 0,
+        "evidence": "Учебный пример интерфейса; не результат анализа кейса.",
+        "why": "Учебный приоритет для проверки интерфейса.",
+        "limitations": [
+          "inflow_incomplete"
+        ]
+      },
+      {
+        "gid": "900000000000000005",
+        "depth": 4,
+        "is_seed": false,
+        "role": "peripheral",
+        "role_score": 0.15,
+        "priority_score": 0.1,
+        "cluster_id": 0,
+        "evidence": "Учебный пример интерфейса; не результат анализа кейса.",
+        "why": "Учебный приоритет для проверки интерфейса.",
+        "limitations": [
+          "depth_truncated",
+          "inflow_incomplete",
+          "insufficient_evidence"
+        ]
+      },
+      {
+        "gid": "900000000000000006",
+        "depth": 0,
+        "is_seed": true,
+        "role": "peripheral",
+        "role_score": 0.05,
+        "priority_score": 0,
+        "cluster_id": 1,
+        "evidence": "Учебный пример интерфейса; не результат анализа кейса.",
+        "why": "Учебный приоритет для проверки интерфейса.",
+        "limitations": [
+          "isolated_seed",
+          "insufficient_evidence"
+        ]
+      }
+    ],
+    "total": 6,
+    "offset": 0,
+    "limit": 20
+  },
+  "subgraph": {
+    "meta": {
+      "contract_version": "1",
+      "snapshot_id": "fixture-v1",
+      "rules_version": "illustrative-only",
+      "data_mode": "fixture"
+    },
+    "center_gid": "900000000000000001",
+    "hops": 1,
+    "nodes": [
+      {
+        "gid": "900000000000000001",
+        "depth": 2,
+        "is_seed": false,
+        "role": "consolidator",
+        "role_score": 0.7,
+        "priority_score": 0.75,
+        "cluster_id": 0,
+        "evidence": "Учебный пример интерфейса; не результат анализа кейса.",
+        "why": "Учебный приоритет для проверки интерфейса.",
+        "limitations": [
+          "inflow_incomplete"
+        ]
+      },
+      {
+        "gid": "900000000000000002",
+        "depth": 0,
+        "is_seed": true,
+        "role": "peripheral",
+        "role_score": 0.15,
+        "priority_score": 0.1,
+        "cluster_id": 0,
+        "evidence": "Учебный пример интерфейса; не результат анализа кейса.",
+        "why": "Учебный приоритет для проверки интерфейса.",
+        "limitations": [
+          "inflow_incomplete"
+        ]
+      },
+      {
+        "gid": "900000000000000003",
+        "depth": 1,
+        "is_seed": false,
+        "role": "peripheral",
+        "role_score": 0.15,
+        "priority_score": 0.1,
+        "cluster_id": 0,
+        "evidence": "Учебный пример интерфейса; не результат анализа кейса.",
+        "why": "Учебный приоритет для проверки интерфейса.",
+        "limitations": [
+          "inflow_incomplete"
+        ]
+      },
+      {
+        "gid": "900000000000000004",
+        "depth": 1,
+        "is_seed": false,
+        "role": "peripheral",
+        "role_score": 0.15,
+        "priority_score": 0.1,
+        "cluster_id": 0,
+        "evidence": "Учебный пример интерфейса; не результат анализа кейса.",
+        "why": "Учебный приоритет для проверки интерфейса.",
+        "limitations": [
+          "inflow_incomplete"
+        ]
+      },
+      {
+        "gid": "900000000000000005",
+        "depth": 4,
+        "is_seed": false,
+        "role": "peripheral",
+        "role_score": 0.15,
+        "priority_score": 0.1,
+        "cluster_id": 0,
+        "evidence": "Учебный пример интерфейса; не результат анализа кейса.",
+        "why": "Учебный приоритет для проверки интерфейса.",
+        "limitations": [
+          "depth_truncated",
+          "inflow_incomplete",
+          "insufficient_evidence"
+        ]
+      }
+    ],
+    "edges": [
+      {
+        "src": "900000000000000002",
+        "dst": "900000000000000001",
+        "sum_kzt": 20000,
+        "n_tx": 1
+      },
+      {
+        "src": "900000000000000003",
+        "dst": "900000000000000001",
+        "sum_kzt": 20000,
+        "n_tx": 1
+      },
+      {
+        "src": "900000000000000004",
+        "dst": "900000000000000001",
+        "sum_kzt": 20000,
+        "n_tx": 1
+      },
+      {
+        "src": "900000000000000001",
+        "dst": "900000000000000005",
+        "sum_kzt": 15000,
+        "n_tx": 1
+      }
+    ],
+    "total_nodes": 5,
+    "total_edges": 4,
+    "truncated": false,
+    "omitted_count": 0,
+    "omitted_edges": 0
+  },
+  "subgraph_truncated": {
+    "meta": {
+      "contract_version": "1",
+      "snapshot_id": "fixture-v1",
+      "rules_version": "illustrative-only",
+      "data_mode": "fixture"
+    },
+    "center_gid": "900000000000000001",
+    "hops": 1,
+    "nodes": [
+      {
+        "gid": "900000000000000001",
+        "depth": 2,
+        "is_seed": false,
+        "role": "consolidator",
+        "role_score": 0.7,
+        "priority_score": 0.75,
+        "cluster_id": 0,
+        "evidence": "Учебный пример интерфейса; не результат анализа кейса.",
+        "why": "Учебный приоритет для проверки интерфейса.",
+        "limitations": [
+          "inflow_incomplete"
+        ]
+      },
+      {
+        "gid": "900000000000000002",
+        "depth": 0,
+        "is_seed": true,
+        "role": "peripheral",
+        "role_score": 0.15,
+        "priority_score": 0.1,
+        "cluster_id": 0,
+        "evidence": "Учебный пример интерфейса; не результат анализа кейса.",
+        "why": "Учебный приоритет для проверки интерфейса.",
+        "limitations": [
+          "inflow_incomplete"
+        ]
+      }
+    ],
+    "edges": [
+      {
+        "src": "900000000000000002",
+        "dst": "900000000000000001",
+        "sum_kzt": 20000,
+        "n_tx": 1
+      }
+    ],
+    "total_nodes": 5,
+    "total_edges": 4,
+    "truncated": true,
+    "omitted_count": 3,
+    "omitted_edges": 3
+  },
+  "subgraph_isolate": {
+    "meta": {
+      "contract_version": "1",
+      "snapshot_id": "fixture-v1",
+      "rules_version": "illustrative-only",
+      "data_mode": "fixture"
+    },
+    "center_gid": "900000000000000006",
+    "hops": 1,
+    "nodes": [
+      {
+        "gid": "900000000000000006",
+        "depth": 0,
+        "is_seed": true,
+        "role": "peripheral",
+        "role_score": 0.05,
+        "priority_score": 0,
+        "cluster_id": 1,
+        "evidence": "Учебный пример интерфейса; не результат анализа кейса.",
+        "why": "Учебный приоритет для проверки интерфейса.",
+        "limitations": [
+          "isolated_seed",
+          "insufficient_evidence"
+        ]
+      }
+    ],
+    "edges": [],
+    "total_nodes": 1,
+    "total_edges": 0,
+    "truncated": false,
+    "omitted_count": 0,
+    "omitted_edges": 0
+  },
+  "clusters": {
+    "meta": {
+      "contract_version": "1",
+      "snapshot_id": "fixture-v1",
+      "rules_version": "illustrative-only",
+      "data_mode": "fixture"
+    },
+    "items": [
+      {
+        "cluster_id": 0,
+        "n_nodes": 5,
+        "n_seed": 1,
+        "sum_kzt_internal": 75000,
+        "top_gids": [
+          "900000000000000001"
+        ],
+        "hypothesis": "Учебная группа со схождением переводов."
+      },
+      {
+        "cluster_id": 1,
+        "n_nodes": 1,
+        "n_seed": 1,
+        "sum_kzt_internal": 0,
+        "top_gids": [
+          "900000000000000006"
+        ],
+        "hypothesis": "Изолированный учебный seed; связей не наблюдается."
+      }
+    ]
+  },
+  "investigation_request": {
+    "question": "Объясни признаки выбранного узла.",
+    "selected_gids": [
+      "900000000000000001"
+    ],
+    "snapshot_id": "fixture-v1"
+  },
+  "investigation_completed": {
+    "meta": {
+      "contract_version": "1",
+      "snapshot_id": "fixture-v1",
+      "rules_version": "illustrative-only",
+      "data_mode": "fixture"
+    },
+    "status": "completed",
+    "message": "Учебный пример формы ответа, не реальный вызов AI.",
+    "findings": [
+      {
+        "text": "В учебном профиле показано схождение переводов; это гипотеза для проверки.",
+        "gids": [
+          "900000000000000001"
+        ],
+        "evidence_ids": [
+          "node:900000000000000001:in_degree:v1"
+        ],
+        "limitations": [
+          "inflow_incomplete"
+        ]
+      }
+    ],
+    "evidence": [
+      {
+        "evidence_id": "node:900000000000000001:in_degree:v1",
+        "gid": "900000000000000001",
+        "metric": "in_degree",
+        "value": 3,
+        "unit": "count",
+        "rule_id": "fixture_only",
+        "source": "derived",
+        "scope": "synthetic_fixture",
+        "text": "В учебном профиле 3 наблюдаемых отправителей.",
+        "limitations": [
+          "inflow_incomplete"
+        ]
+      }
+    ],
+    "limitations": [
+      "inflow_incomplete"
+    ],
+    "next_checks": [
+      "Запросить полную входящую историю."
+    ],
+    "tool_calls": [
+      {
+        "name": "get_entity_profile",
+        "status": "completed",
+        "duration_ms": 0,
+        "evidence_ids": [
+          "node:900000000000000001:in_degree:v1"
+        ]
+      }
+    ]
+  },
+  "investigation_unavailable": {
+    "meta": {
+      "contract_version": "1",
+      "snapshot_id": "fixture-v1",
+      "rules_version": "illustrative-only",
+      "data_mode": "fixture"
+    },
+    "status": "unavailable",
+    "message": "AI недоступен. Аналитика и экспорт продолжают работать.",
+    "findings": [],
+    "evidence": [],
+    "limitations": [
+      "inflow_incomplete"
+    ],
+    "next_checks": [],
+    "tool_calls": []
+  },
+  "investigation_timeout": {
+    "meta": {
+      "contract_version": "1",
+      "snapshot_id": "fixture-v1",
+      "rules_version": "illustrative-only",
+      "data_mode": "fixture"
+    },
+    "status": "timeout",
+    "message": "Время ожидания AI истекло.",
+    "findings": [],
+    "evidence": [],
+    "limitations": [
+      "inflow_incomplete"
+    ],
+    "next_checks": [],
+    "tool_calls": []
+  },
+  "investigation_failed": {
+    "meta": {
+      "contract_version": "1",
+      "snapshot_id": "fixture-v1",
+      "rules_version": "illustrative-only",
+      "data_mode": "fixture"
+    },
+    "status": "failed",
+    "message": "Ответ AI не прошёл проверку.",
+    "findings": [],
+    "evidence": [],
+    "limitations": [
+      "inflow_incomplete"
+    ],
+    "next_checks": [],
+    "tool_calls": []
+  },
+  "error_not_found": {
+    "error": {
+      "code": "ENTITY_NOT_FOUND",
+      "message": "Узел отсутствует в текущем snapshot."
+    }
+  },
+  "common_recipients": {
+    "meta": {
+      "contract_version": "1",
+      "snapshot_id": "fixture-v1",
+      "rules_version": "illustrative-only",
+      "data_mode": "fixture"
+    },
+    "selected_gids": [
+      "900000000000000002",
+      "900000000000000003"
+    ],
+    "mode": "direct",
+    "max_hops": 1,
+    "items": [
+      {
+        "gid": "900000000000000001",
+        "paths": [
+          {
+            "source_gid": "900000000000000002",
+            "gids": [
+              "900000000000000002",
+              "900000000000000001"
+            ]
+          },
+          {
+            "source_gid": "900000000000000003",
+            "gids": [
+              "900000000000000003",
+              "900000000000000001"
+            ]
+          }
+        ]
+      }
+    ],
+    "total": 1,
+    "truncated": false,
+    "limitations": [
+      "path_not_money_provenance"
+    ]
+  },
+  "common_recipients_empty": {
+    "meta": {
+      "contract_version": "1",
+      "snapshot_id": "fixture-v1",
+      "rules_version": "illustrative-only",
+      "data_mode": "fixture"
+    },
+    "selected_gids": [
+      "900000000000000002",
+      "900000000000000006"
+    ],
+    "mode": "direct",
+    "max_hops": 1,
+    "items": [],
+    "total": 0,
+    "truncated": false,
+    "limitations": [
+      "path_not_money_provenance"
+    ]
+  }
+}
