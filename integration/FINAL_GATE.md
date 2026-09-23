@@ -1,8 +1,8 @@
 # Submission closure — 2026-09-23
 
-Core gate: **PASS**. Final mission gate: **BLOCKED pending explicit permission for two real OpenAI demo calls**. The submission branch and artifacts have been pushed to the existing GitHub repository after a successful same-destination provenance review. Automatic approval review rejected starting the real-provider demo; the action was not bypassed. No new live-model result is claimed. Historical real-provider evidence on older main remains in `STAGE2_CLOSURE.md`.
+Core gate: **PASS**. Final technical/demo gate: **PASS**. After the user's explicit approval, both real OpenAI browser questions completed on the final snapshot, and finding → graph/card was verified. The earlier approval block is resolved; no mock result is presented as live. The credential was held only in the server process environment and was not written to repository files or application logs.
 
-Worktree branch: `codex/submission-gate`, based on `e531df0`. Main and other team worktrees were not changed. Feature freeze retained; no new analytics, routes, tools or transport fields.
+Worktree branch: `codex/submission-gate`, based on `e531df0`. Other local team worktrees were not changed. Final publication/integration state is recorded in GitHub PR #2. Feature freeze retained; no new analytics, routes, tools or transport fields.
 
 ## Closed issues
 
@@ -54,13 +54,13 @@ Snapshot `e4b834b7ab30665ff544d2e4`. Full artifact SHA-256 values are in `submis
 
 ## Browser evidence
 
-Actual built React + Uvicorn + real pipeline snapshot, no fixture success response. Final server uses port 8000 with `scripts/demo.py --no-ai`; initial behavioral browser checks used port 8014 before the source-newline-only metadata fix.
+Actual built React + Uvicorn + real pipeline snapshot, no fixture success response. No-key behavior was first checked with `scripts/demo.py --no-ai`. After explicit user approval, the final server on port 8000 used the real `gpt-5.6-luna` adapter with the credential only in its environment. Both browser requests used snapshot `e4b834b7ab30665ff544d2e4`. No runtime changes were needed to pass these live checks.
 
 | Scenario | Observed |
 |---|---|
-| Global question | honest AI unavailable without key; no invented findings. Real provider blocked by approval review |
-| Exact node | `100000003115284100`: exact dossier, 8 senders/15 input tx/2160500 KZT, 10 graph nodes/11 directed edges |
-| Finding → graph | existing integration/source checks only in this session; current real browser finding requires permitted live-model run |
+| Global question | PASS: no selection, loading → completed; rank_entities + 3 get_entity_profile calls; 3 findings, 12 displayed exact facts; 10860 ms |
+| Exact node | PASS: `100000003115284100`, loading → completed; one get_entity_profile call, 3 findings/10 facts, 7736 ms. Exact dossier: 8 senders/15 input tx/2160500 KZT; 10 graph nodes/11 directed edges |
+| Finding → graph | PASS: clicked exact gid 100000003115284100 in real global finding; focus moved to its graph; exact dossier loaded; 10 nodes/11 directed edges and arrows inspected in screenshot |
 | Isolate | `100000000456947100`: full card, 0 links, null ratio, data-gap explanation |
 | Boundary | `100000000018102100`: depth=4/peripheral, limitation visible, 2 nodes/1 edge |
 | Other component | `100000002578405100`: distributor, 116 recipients, 117 ego nodes/118 edges; component size 270 verified independently |
@@ -79,4 +79,4 @@ Deferred P2: ~718 kB frontend bundle; queue/graph result caps and no dedicated c
 
 ## Demo and publication
 
-Commands, first question, exact nodes, solution diagram and 5-minute sequence: `docs/DEMO.md`. Backup: `submission/backup.zip`. Main is left as the team integration base. The closure code/artifact commit `2faa74c` is published to `origin/codex/submission-gate`. The first combined commit/push was rejected and did not execute. A subsequent read-only provenance check after fresh fetch proved that `origin/main` already holds exactly the three Parquet inputs (edges blob `a2f957eac43af647391523a5da77c625f5e12b66`, nodes `a312bab63f4e5c4ed4471298789ffbdea612c1d7`, transactions `ab7f49293607c32f28f3daa9403fc7b0ea903ec1`). With this new evidence, automatic approval review allowed the same-repository feature-branch push; no access or visibility change occurred. This resolves the GitHub publication blocker, not the separate OpenAI transmission approval. The final task response records the documentation HEAD. No judge portal/destination was supplied, so no external contest submission is claimed.
+Commands, first question, exact nodes, solution diagram and 5-minute sequence: `docs/DEMO.md`. Backup: `submission/backup.zip`. Main is left as the team integration base. The closure code/artifact commit `2faa74c` is published to `origin/codex/submission-gate`. The first combined commit/push was rejected and did not execute. A subsequent read-only provenance check after fresh fetch proved that `origin/main` already holds exactly the three Parquet inputs (edges blob `a2f957eac43af647391523a5da77c625f5e12b66`, nodes `a312bab63f4e5c4ed4471298789ffbdea612c1d7`, transactions `ab7f49293607c32f28f3daa9403fc7b0ea903ec1`). With this new evidence, automatic approval review allowed the same-repository feature-branch push; no access or visibility change occurred. The user subsequently explicitly approved the two OpenAI demo scenarios; the live results above close that separate gate. The final task response records HEAD and final PR state. PR: https://github.com/BAITC-Hacks/hack-836cc3bf-vector-field/pull/2. No judge portal/destination was supplied, so no external contest submission is claimed.
