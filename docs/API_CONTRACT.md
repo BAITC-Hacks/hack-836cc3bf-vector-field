@@ -75,6 +75,8 @@ Common recipients: пересечение узлов, достижимых **и�
 
 ## AI findings и evidence
 
+Уточнение после review: `Entity.evidence` включает facts роли с соответствующим role rule_id и вклады priority с rule_id=`priority_v0`, metric=`priority_component_<feature>`, unit=`ratio`, value=вклад в score (не percentile и не raw metric). Feature names: `direct_seed_senders`, `seed_reach_4`, `in_degree`, `flow_volume`, `betweenness`, `out_degree`. Все шесть вкладов в live profile обязательны; их сумма совпадает с priority_score. Raw значения доступны в metrics; flow_volume=max(in_kzt,out_kzt). Для объяснения role_score служат role_signal_strength/role_support_multiplier и при необходимости role_score_cap. Это значения существующего поля metric:string, структура transport v1 не меняется. Подробности нормализации — BUILD_BRIEF, решения — DECISIONS.md. Синтетические fixtures демонстрируют форму ответа, а не полную разметку live evidence.
+
 Каждый finding имеет gids и evidence_ids. Все gids известны snapshot; все evidence_ids разрешаются в массив evidence ТОГО ЖЕ ответа. Ответ API переносит факты из snapshot/tools, модель только ссылается на них. Ссылки валидируются до показа. Ограничения фактов объединяются с limitations finding/result и не могут исчезнуть при генерации.
 
 Tool calls — реальные name/status/duration_ms/evidence_ids, без скрытых рассуждений. Если модель вернула неподтверждённые числа/обвинение, не выдавать structured parsing за семантическую проверку: убрать непроверенный finding либо вернуть failed с понятным сообщением. Для MVP предпочтительны короткие findings и отображение чисел непосредственно из facts.

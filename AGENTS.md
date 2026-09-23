@@ -13,6 +13,8 @@
 
 Не расширять scope самостоятельно. Не превращать проект в transaction monitoring, AML chatbot или полноценный case management.
 
+Перед реализацией scoring/UI explanations прочитать `docs/DECISIONS.md`: positive midrank определён в BUILD_BRIEF; priority раскладывается на шесть числовых evidence facts; роль и priority объясняются отдельно; coordinator в UI — «Структурный посредник (кандидат)», enum остаётся coordinator. Не переносить из внешних review недоказанные независимость плательщиков, управление сетью и соединение разных weak components.
+
 **Актуальное уточнение:** transport v1 фиксируется в `docs/API_CONTRACT.md` и `shared/contracts.ts`, примеры в `shared/fixtures.json`. Эти файлы уточняют названия/формы полей из BUILD_BRIEF; CSV-схемы официального кейса не меняются. Рабочее расписание на оставшиеся 270 минут — `docs/EXECUTION_PLAN_270_MIN.md`. Прежде чем писать собственные схемы, прочитать v1. Fixtures синтетические; не использовать их scores как результаты анализа.
 
 ## Обязательный результат
