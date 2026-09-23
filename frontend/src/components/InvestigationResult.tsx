@@ -80,6 +80,7 @@ export function InvestigationResult({ result, submitted, onSelect }: Props) {
       ) : (
         <>
           <p className="investigator-summary">{result.message}</p>
+          <p className="investigator-context">Приоритет — баллы дальнейшей проверки, не вероятность преступления.</p>
           <h3 className="investigator-section-title">Что найдено</h3>
           <ol className="investigator-findings">
             {result.findings.map((finding, index) => (

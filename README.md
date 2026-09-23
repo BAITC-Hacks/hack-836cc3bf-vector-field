@@ -2,7 +2,7 @@
 
 Инструмент для AML-аналитика: определить, кого проверить первым среди участников наблюдаемой транзакционной сети, и проверить основания на графе.
 
-**Текущий статус:** pipeline создаёт три CSV и `snapshot.json` из исходных Parquet; FastAPI и React читают один live snapshot. Четыре read-only инструмента Investigator подключены к тем же in-process service-функциям. OpenAI adapter подключён к `/api/investigate`; настоящий provider smoke ranking и node profile пройден с `gpt-5.6-luna` (см. `agent/README.md`). Для живого вызова нужен `OPENAI_API_KEY`. Без ключа возвращается `status=unavailable`, основной экран работает.
+**Текущий статус:** pipeline создаёт три CSV и `snapshot.json` из исходных Parquet; FastAPI и React читают один live snapshot. Четыре read-only инструмента Investigator подключены к тем же in-process service-функциям. OpenAI adapter подключён к `/api/investigate`; ranking и node profile проверены через live frontend с настоящим `gpt-5.6-luna` (см. [integration/STAGE2_CLOSURE.md](integration/STAGE2_CLOSURE.md)). Для живого вызова нужен `OPENAI_API_KEY`. Без ключа возвращается `status=unavailable`, основной экран работает.
 
 Предыдущий checkpoint `fbfe5e0` проверил CSV за 2,947 с на Python 3.12.10. Текущий запуск дополнительно сохраняет JSON snapshot; команды и новое измерение приведены ниже.
 
@@ -46,7 +46,9 @@ python analysis/audit_dataset.py
 
 - **Работает:** `nodes_roles.csv` с 2248 строками; `clusters.csv` с 105 кластерами; `top_nodes.csv` с ранжированием и причинами. Пересчёт по трём Parquet занимает менее 5 минут и не требует API key.
 - **Работает:** единый JSON snapshot, FastAPI, live-экран с поиском любого gid, направленным графом и карточкой.
-- **Осталось:** model adapter для Investigator и проверка запуска на втором ноутбуке/macOS. Четыре read-only tools уже проверены на реальных Parquet.
+- **Работает:** адаптер OpenAI Responses подключён к `/api/investigate` при наличии ключа; без ключа AI возвращает `unavailable`. Четыре read-only tools проверены на реальных Parquet.
+- **Проверено:** реальные ranking и node profile через live frontend, FastAPI, OpenAI, tools и snapshot.
+- **Осталось вне текущего окружения:** запуск на втором ноутбуке/macOS.
 
 ## Ограничения
 
@@ -85,7 +87,7 @@ python analysis/audit_dataset.py
 | `pipeline/` | Расчёты, scoring, clustering, CSV и JSON snapshot | Работает на исходных Parquet |
 | `backend/` | FastAPI и общий read-only snapshot service | Работает локально |
 | `frontend/` | React/Vite: список, граф, карточка и AI-панель | Работает с live API; fixture включается явно |
-| `agent/` | Один Investigator, tools и проверка ответа | Четыре live tools проверены; model adapter отсутствует |
+| `agent/` | Один Investigator, tools и проверка ответа | Четыре live tools; OpenAI Responses adapter; live browser ranking/profile проверены |
 | `shared/` | TypeScript-типы и синтетические fixtures v1 | Contract v1 не менялся |
 
 Реальные команды для каждого модуля находятся в его README. Live-экран и сервис проверены на исходных данных; fixture-режим остаётся учебным.
@@ -164,7 +166,7 @@ python analysis/audit_dataset.py
     ↓ объяснения + ограничения + summaries
 Три CSV + единый JSON snapshot [работает]
     ├── API → priority list / graph / dossier [работает]
-    └── read-only tools → Investigator → UI [tools работают; AI unavailable]
+    └── read-only tools → Investigator → UI [адаптер вызывается при наличии ключа]
 ```
 
 Pipeline работает batch-режимом. API загружает готовый snapshot один раз при старте и обслуживает запросы без повторного расчёта. Frontend показывает серверные показатели, даже когда отображает только часть графа.
@@ -215,7 +217,7 @@ Pipeline работает batch-режимом. API загружает гото�
 
 Ответ содержит findings, ссылки на evidence и gid, ограничения и next checks. Числа лучше отображать из фактов backend, а не заново формулировать моделью. Backend проверяет существование ссылок и согласованность фактов. Проверка JSON-схемы не доказывает истинность свободного текста.
 
-Начальная граница исполнения — не более 6 tool calls, глубина ≤4, ограниченные результаты и общий timeout. Показанная в UI activity соответствует реальным вызовам. При отсутствии ключа или ошибке LLM карточки, поиск, граф и экспорты продолжают работать. Replay, если добавлен, явно обозначается как предыдущий результат.
+Начальная граница исполнения — не более 6 tool calls, глубина ≤4, ограниченные результаты и общий deadline 30 секунд. Показанная в UI activity соответствует реальным вызовам. При отсутствии ключа или ошибке LLM карточки, поиск, граф и экспорты продолжают работать. Replay, если добавлен, явно обозначается как предыдущий результат.
 
 Для живого Investigator установите `OPENAI_API_KEY` в окружении backend; `OPENAI_MODEL` необязателен (по умолчанию `gpt-5.6-luna`). После создания snapshot проверьте `python -m agent.live_smoke --scenario all`. Подробности — в `agent/README.md`. Без ключа эта проверка честно останавливается, а core routes остаются доступны.
 
@@ -243,7 +245,7 @@ git switch codex/agent
 
 ## 11. Запуск: что доступно сейчас
 
-Рабочий запуск из корня репозитория. Нужны Python 3.12 и Node.js 22.12+ (или 20.19+). API key не нужен.
+Рабочий запуск из корня репозитория. Нужны Python 3.12+ и Node.js 22.12+ (или 20.19+). Текущая проверка: Python 3.14.7, Node 24.21.0. Для pipeline, API и основного экрана API key не нужен.
 
 Windows PowerShell:
 
@@ -268,11 +270,29 @@ cd frontend && npm ci && npm run build && cd ..
 .venv/bin/python -m uvicorn backend.app:app --host 127.0.0.1 --port 8000
 ```
 
-Открыть `http://127.0.0.1:8000`. Выходы: `pipeline/out/nodes_roles.csv`, `clusters.csv`, `top_nodes.csv`, `snapshot.json`. Проверено на Windows с Python 3.12.6: 2248 узлов, 19 изолятов, 105 кластеров, полный pipeline со snapshot за 7.171 с после установки зависимостей. macOS/Linux пока не проверены.
+Для реального Investigator установите ключ в окружении **до запуска API**. Не добавляйте его в репозиторий. Модель по умолчанию — `gpt-5.6-luna`; `OPENAI_MODEL` можно задать явно:
+
+```powershell
+# Windows PowerShell, из корня репозитория
+$env:OPENAI_API_KEY="<ваш API key>"
+$env:OPENAI_MODEL="gpt-5.6-luna"
+.\.venv\Scripts\python.exe -m uvicorn backend.app:app --host 127.0.0.1 --port 8000
+```
+
+```bash
+# macOS/Linux, из корня репозитория
+export OPENAI_API_KEY='<ваш API key>'
+export OPENAI_MODEL='gpt-5.6-luna'
+.venv/bin/python -m uvicorn backend.app:app --host 127.0.0.1 --port 8000
+```
+
+После изменения переменных окружения перезапустите сервер. AI-операция имеет общий deadline 30 секунд; при отсутствии ключа `/api/investigate` возвращает `status=unavailable` по contract v1.
+
+Открыть `http://127.0.0.1:8000`. Выходы: `pipeline/out/nodes_roles.csv`, `clusters.csv`, `top_nodes.csv`, `snapshot.json`. Проверено на Windows с Python 3.14.7: 2248 узлов, 19 изолятов, 105 кластеров, полный pipeline со snapshot за 3.211 с; повтор за 2.998 с дал побайтово одинаковые четыре файла. macOS/Linux пока не проверены.
 
 Проверка: `.\.venv\Scripts\python.exe -m unittest pipeline.test_pipeline -v`, `.\.venv\Scripts\python.exe -m unittest discover -s agent -p 'test_*.py' -v`, `.\.venv\Scripts\python.exe -m unittest discover -s integration -p 'test_*.py' -v`, `npm.cmd run build` в `frontend/`. Для учебного UI отдельно задать `VITE_DATA_PROVIDER=fixture`; его scores синтетические.
 
-Реальная модель для Investigator пока не подключена. Не добавляйте ключ в репозиторий. API/CSV/UI работают при отсутствии ключа.
+Канонический адаптер `agent/openai_model.py` создаётся backend на время запроса и закрывается после него. `.env.example` описывает настройки; `.env` автоматически не загружается. Для сетевого API smoke: `python -m agent.live_smoke --scenario all`. Текущий итог интеграции и browser gate — в `integration/STAGE2_CLOSURE.md`. API/CSV/UI работают при отсутствии ключа.
 
 ## 12. Приоритеты и контроль времени
 

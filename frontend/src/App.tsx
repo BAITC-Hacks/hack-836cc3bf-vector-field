@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useMemo, useRef, useState } from 'react'
 import type { EntityResponse, Gid, Role, SubgraphResponse, SummaryResponse } from '@shared/contracts'
 import { BriefHeader } from './components/BriefHeader'
 import { Dossier } from './components/Dossier'
@@ -20,6 +20,7 @@ export default function App() {
   const [searchFeedback, setSearchFeedback] = useState<string | null>(null)
   const [selectedGid, setSelectedGid] = useState<Gid | null>(null)
   const [subgraphLimit, setSubgraphLimit] = useState(80)
+  const graphSection = useRef<HTMLElement | null>(null)
 
   const summary = useAsyncData<SummaryResponse>(() => provider.getSummary(), [provider])
   const queue = useAsyncData(
@@ -49,6 +50,14 @@ export default function App() {
     setQuery(gid)
     setQueryError(null)
     setSearchFeedback(null)
+  }
+
+  function openInvestigationGid(gid: Gid) {
+    selectGid(gid)
+    window.requestAnimationFrame(() => {
+      graphSection.current?.focus({ preventScroll: true })
+      graphSection.current?.scrollIntoView({ block: 'start', inline: 'nearest' })
+    })
   }
 
   function searchGid(gid: Gid) {
@@ -121,7 +130,8 @@ export default function App() {
           />
         </aside>
 
-        <section className="center-column">
+        <section className="center-column" ref={graphSection} tabIndex={-1}
+          aria-label={selectedGid ? `Граф узла ${selectedGid}` : 'Граф узла'}>
           <GraphPanel
             state={subgraph}
             onSelect={selectGid}
@@ -131,9 +141,9 @@ export default function App() {
         </section>
 
         <aside className="right-column">
-          <InvestigatorPanel mode={provider.mode} selectedGid={selectedGid} onSelect={selectGid}
+          <InvestigatorPanel mode={provider.mode} selectedGid={selectedGid} onSelect={openInvestigationGid}
             snapshotId={summary.status === 'ready' ? summary.data.meta.snapshot_id : null} />
-          <section className="panel dossier-panel">
+          <section className="panel dossier-panel" id="selected-dossier" tabIndex={-1}>
             <div className="panel-head">
               <h2 className="panel-title">Dossier</h2>
               <span className="panel-sub">профиль выбранного gid</span>

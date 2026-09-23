@@ -295,6 +295,7 @@ export function GraphPanel({ state, onSelect, subgraphLimit, onSubgraphLimit }: 
                 открыть карточку
               </span>
             )}
+            {' '}<a className="btn btn-tiny" href="#selected-dossier">Карточка узла</a>
           </div>
 
           <div className="graph-canvas" ref={containerRef} />

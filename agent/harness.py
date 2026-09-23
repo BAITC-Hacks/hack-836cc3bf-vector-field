@@ -7,10 +7,13 @@ model steps while the backend snapshot and live provider are unfinished.
 import asyncio
 from dataclasses import dataclass
 import re
+import logging
 from typing import Any, Collection, Mapping, Protocol, Sequence
 
 from .boundary import InvestigatorTools, LIMITS, ToolLimits
 from .session import ToolSession
+
+logger = logging.getLogger("uvicorn.error")
 
 PATH_NEXT_CHECK = "Запросить точное время переводов и подтверждение связи операций."
 UNSUPPORTED_CLAIM = re.compile(
@@ -150,6 +153,7 @@ async def investigate(
                 model.next_step(clean_request, tuple(observations)), timeout=remaining
             )
             if isinstance(action, ToolAction):
+                logger.info("investigation tool invoked name=%s", action.name)
                 try:
                     result = await session.call(action.name, action.arguments)
                 except LookupError:
@@ -196,6 +200,7 @@ async def investigate(
             raise ValueError("model returned an unsupported action")
         return _failure(session, "failed", "Превышен лимит вызовов инструментов.")
     except (asyncio.TimeoutError, TimeoutError):
+        logger.warning("investigation timed out completed_tools=%d", len(session.calls))
         return _failure(session, "timeout", "Investigator превысил лимит времени.")
     except ModelUnavailableError:
         return _failure(session, "unavailable", "Модель Investigator недоступна.")
@@ -203,5 +208,7 @@ async def investigate(
         return _failure(session, "failed", "Провайдер модели не ответил корректно.")
     except ModelProtocolError:
         return _failure(session, "failed", "Ответ модели или вызов инструмента некорректен.")
-    except Exception:
+    except Exception as error:
+        logger.warning("investigation failed error_type=%s completed_tools=%d",
+                       type(error).__name__, len(session.calls))
         return _failure(session, "failed", "Ответ Investigator не прошёл проверку.")
