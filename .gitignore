@@ -1,0 +1,13 @@
+.analysis_deps/
+analysis/audit_run.log
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+node_modules/
+dist/
+.env
+.env.*
+!.env.example
+.DS_Store
+__MACOSX/
