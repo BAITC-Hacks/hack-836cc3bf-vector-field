@@ -85,6 +85,8 @@ class ToolSession:
             self._known_gid(gid)
         if len(set(gids)) != len(gids):
             raise ValueError("selected_gids must be unique")
+        if not isinstance(request["snapshot_id"], str):
+            raise ValueError("snapshot_id must be a string")
         if request["snapshot_id"] != self.meta.get("snapshot_id"):
             raise SnapshotMismatch("SNAPSHOT_MISMATCH")
         return {

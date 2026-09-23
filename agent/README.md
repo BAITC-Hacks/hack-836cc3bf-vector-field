@@ -1,6 +1,6 @@
 # Investigator boundary
 
-Текущий статус: контур read-only tools и один ограниченный model-agnostic loop проверены **на синтетических fixtures**. Живой сервис по исходным Parquet, реальная модель и HTTP route ещё не подключены. Этот пакет не нужен для запуска аналитического CLI.
+Текущий статус: контур read-only tools и один ограниченный model-agnostic loop проверены на синтетических fixtures и через live snapshot из исходных Parquet. FastAPI `/api/investigate` передаёт loop те же in-process service-функции, что используют core routes. При `OPENAI_API_KEY` backend создаёт адаптер OpenAI Responses на время запроса; без ключа возвращается `unavailable`. Реальный HTTP smoke с credential ещё не проведён. Этот пакет не нужен для запуска аналитического CLI.
 
 ## Что уже работает
 
@@ -19,17 +19,17 @@
 python -m unittest discover -s agent -p 'test_*.py' -v
 ```
 
-Проверены успешный профиль, общий получатель и пустое пересечение, неизвестный gid, неверная ссылка/значение fact, устаревший snapshot, depth=4, шесть вызовов, timeout, ошибка модели, отсутствие модели и отбрасывание неподтверждённой фразы. Тесты не требуют API key или сторонних Python-зависимостей.
+Проверены успешный профиль, общий получатель и пустое пересечение, неизвестный gid, неверная ссылка/значение fact, устаревший snapshot, depth=4, шесть вызовов, timeout, ошибка модели, отсутствие модели и отбрасывание неподтверждённой фразы. Все 24 теста `agent/` проходят без API key и сторонних Python-зависимостей. Ещё 5 тестов адаптера (`python -m unittest backend.test_openai_model -v`) и 10 интеграционных тестов (`python -m unittest discover -s integration -p 'test_*.py' -v`) проходят без реального вызова OpenAI; для интеграционных тестов нужны зависимости из `backend/requirements.txt`.
 
 ## Подключение live backend
 
-Backend должен передать в `investigate(request, tools, model, meta=..., known_gids=...)` provider, который реализует `InvestigatorTools` поверх **тех же in-process service-функций и snapshot**, что API. Нельзя выполнять HTTP-запросы к собственному серверу, пересчитывать роли или читать Parquet отдельно в агенте. `meta.snapshot_id` связан с hashes входных данных и config, `known_gids` — полный набор текущего snapshot.
+`backend/app.py` передаёт в `investigate(request, tools, model, meta=..., known_gids=...)` реализацию `InvestigatorTools` из `backend/service.py`. Она использует **те же in-process service-функции и snapshot**, что API, без HTTP-запросов к собственному серверу и пересчёта ролей. `meta.snapshot_id` связан с hashes входных данных и config, `known_gids` — полный набор текущего snapshot.
 
-Перед подключением модели live provider должен предоставить:
+Live provider предоставляет:
 
 1. Полные `EntityResponse` с ролью, priority и структурированным evidence, включая шесть `priority_component_*`.
 2. `SubgraphResponse` и `EntityListResponse` по контракту, с лимитами и точными string gid.
 3. `CommonRecipientsResponse` с реально существующими направленными рёбрами, кратчайшими путями-свидетельствами и детерминированным tie-breaking. `agent/evidence.py` проверяет форму ответа, но не может проверить граф без snapshot service.
 4. Текущий `meta`, набор gid и независимость core routes/CSV от доступности модели.
 
-`InvestigatorModel` пока является Protocol. Реальный SDK adapter подключать после Core Green; он должен выдавать `ToolAction` или `FinalAction`, без нового orchestration слоя. Ошибки валидации не превращаются в `completed`. Проверка ссылок не доказывает смысл произвольного текста, поэтому итоговый текст формируется из контролируемых шаблонов, а числовые значения должны отображаться из facts.
+`InvestigatorModel` остаётся Protocol; `backend/openai_model.py` реализует его через OpenAI Responses и возвращает `ToolAction` или `FinalAction` без нового orchestration слоя. Ошибки валидации не превращаются в `completed`. Проверка ссылок не доказывает смысл произвольного текста, поэтому итоговый текст формируется из контролируемых шаблонов, а числовые значения должны отображаться из facts. Реальный HTTP smoke с провайдером остаётся непроверенным.

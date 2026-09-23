@@ -1,19 +1,20 @@
 # Общая live-интеграция
 
-Ветка `codex/integration-live` основана на checkpoint `fbfe5e0` и включает опубликованный frontend `0fd57ad`. В этой ветке pipeline создаёт три официальных CSV и `snapshot.json`; HTTP, четыре Investigator tools и React читают один live snapshot. Контракт v1 не менялся. Fixtures остаются синтетическими.
+Текущий checkout включает pipeline с тремя официальными CSV и `snapshot.json`; HTTP, четыре Investigator tools и React читают один live snapshot. Backend подключает адаптер OpenAI Responses к `/api/investigate` при наличии `OPENAI_API_KEY`. Контракт v1 не менялся. Fixtures остаются синтетическими; реальный HTTP smoke с credential ещё не проведён.
 
-Проверено на Windows с Python 3.12.6 и Node 22.11.0 (Vite рекомендует 22.12+). Полный pipeline со snapshot занял 7.171 с после установки зависимостей: 2248 узлов, 3119 рёбер, 4840 транзакций, 35 компонент, 19 изолятов, 105 кластеров. `integration.test_live_service` проверяет на реальных Parquet профиль, подграф, ранжирование, общих получателей, exact string gid, evidence, ограничения, пустой результат, неизвестный gid, timeout и AI unavailable. В браузере проверены топ-лист, поиск произвольного gid, изолят, depth=4, стрелки, скрытые соседи 80→200 и AI unavailable.
+Проверено на Windows с Python 3.12.6 и Node 22.11.0 (Vite рекомендует 22.12+). Полный pipeline со snapshot занял 7.171 с после установки зависимостей: 2248 узлов, 3119 рёбер, 4840 транзакций, 35 компонент, 19 изолятов, 105 кластеров. `integration.test_live_service` проверяет на реальных Parquet профиль, подграф, ранжирование, общих получателей, exact string gid, evidence, ограничения, пустой результат, неизвестный gid, timeout, AI unavailable и HTTP Investigator с тестовыми моделями/SDK mock. В браузере проверены топ-лист, поиск произвольного gid, изолят, depth=4, стрелки, скрытые соседи 80→200 и AI unavailable; live AI flow с реальным провайдером не проверен.
 
 ```powershell
 .\.venv\Scripts\python.exe -m pipeline --data 'case/data (1)/data' --out pipeline/out
 .\.venv\Scripts\python.exe -m unittest pipeline.test_pipeline -v
 .\.venv\Scripts\python.exe -m unittest discover -s agent -p 'test_*.py' -v
+.\.venv\Scripts\python.exe -m unittest backend.test_openai_model -v
 .\.venv\Scripts\python.exe -m unittest discover -s integration -p 'test_*.py' -v
 cd frontend
 npm.cmd run build
 ```
 
-Повторный полный запуск занял 6.864 с; SHA-256 всех трёх CSV и `snapshot.json` совпали с предыдущим запуском. Прошли 3 теста pipeline, 24 теста agent, 5 интеграционных тестов и frontend build. Реальный model adapter пока отсутствует; `/api/investigate` возвращает `status=unavailable` при валидном запросе. Второй ноутбук/macOS не проверены.
+Повторный полный запуск занял 6.864 с; SHA-256 всех трёх CSV и `snapshot.json` совпали с предыдущим запуском. В текущем checkout прошли 24 теста agent, 5 тестов адаптера OpenAI Responses и 10 интеграционных тестов (8 live service + 2 pipeline agent); последние используют тестовые модели/SDK mock, без реального провайдера. Ранее прошли 3 теста pipeline и frontend build. Без ключа `/api/investigate` возвращает `status=unavailable`. Реальный HTTP smoke с credential и запуск на втором ноутбуке/macOS ещё не проверены.
 
 ## Исторический checkpoint `fbfe5e0` (до frontend и snapshot/API)
 

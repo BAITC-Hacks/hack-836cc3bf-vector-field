@@ -49,10 +49,10 @@ Vite проксирует `/api` на `http://127.0.0.1:8000`. Нужны routes
 - `GET /api/subgraph?gid=&hops=&limit=`
 - `GET /api/clusters`
 
-В собранном режиме FastAPI раздаёт `frontend/dist` вместе с `/api`; `GET /api/summary` и остальные routes используют `pipeline/out/snapshot.json`. Панель Investigator отображает `unavailable` при отсутствии model adapter, не скрывая core.
+В собранном режиме FastAPI раздаёт `frontend/dist` вместе с `/api`; `GET /api/summary` и остальные routes используют `pipeline/out/snapshot.json`. Панель Investigator получает ответ `/api/investigate`; без `OPENAI_API_KEY` она отображает `unavailable`, не скрывая core.
 
 ## Ограничения
 
 - Без предварительного запуска pipeline live API вернёт `SNAPSHOT_NOT_READY`.
-- Реальная модель Investigator пока не подключена; её status отображается честно.
+- Адаптер OpenAI Responses подключён к backend при наличии `OPENAI_API_KEY`; реальный HTTP smoke с credential ещё не проведён. Статус ответа Investigator отображается без подмены.
 - На Windows в этой сессии сборка прошла на Node 22.11 с предупреждением Vite о требовании 22.12+; `npm ci` пропустил optional Windows binding Rolldown, поэтому его пришлось доустановить в локальный `node_modules` командой `npm.cmd install --no-save --no-package-lock @rolldown/binding-win32-x64-msvc@1.2.9`. Эта команда не меняет lockfile.
