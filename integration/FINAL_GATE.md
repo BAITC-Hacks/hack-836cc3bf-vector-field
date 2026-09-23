@@ -1,5 +1,7 @@
 # Submission closure — 2026-09-23
 
+Latest UI integration: **PASS** — frontend `ea0693d` over verified main, production build, two new real browser AI scenarios, edge cases and downloads. See [FINAL_UX_INTEGRATION.md](FINAL_UX_INTEGRATION.md). The original core evidence below is retained; analytics and contracts are unchanged.
+
 Core gate: **PASS**. Final technical/demo gate: **PASS**. After the user's explicit approval, both real OpenAI browser questions completed on the final snapshot, and finding → graph/card was verified. The earlier approval block is resolved; no mock result is presented as live. The credential was held only in the server process environment and was not written to repository files or application logs.
 
 Worktree branch: `codex/submission-gate`, based on `e531df0`. Other local team worktrees were not changed. Final publication/integration state is recorded in GitHub PR #2. Feature freeze retained; no new analytics, routes, tools or transport fields.
