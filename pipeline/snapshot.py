@@ -34,9 +34,15 @@ def _snapshot_id(data_dir: Path) -> str:
         Path(config.__file__), Path(__file__).with_name("run.py"),
     ):
         digest.update(path.name.encode("ascii"))
-        with path.open("rb") as handle:
-            for chunk in iter(lambda: handle.read(1024 * 1024), b""):
-                digest.update(chunk)
+        if path.suffix == ".py":
+            # Git checkout line endings do not change Python source semantics.
+            # Universal-newline reading makes the identity portable; Parquet
+            # bytes below remain untouched.
+            digest.update(path.read_text(encoding="utf-8").encode("utf-8"))
+        else:
+            with path.open("rb") as handle:
+                for chunk in iter(lambda: handle.read(1024 * 1024), b""):
+                    digest.update(chunk)
     return digest.hexdigest()[:24]
 
 

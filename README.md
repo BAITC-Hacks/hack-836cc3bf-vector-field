@@ -2,9 +2,11 @@
 
 Инструмент для AML-аналитика: определить, кого проверить первым среди участников наблюдаемой транзакционной сети, и проверить основания на графе.
 
-**Текущий статус:** pipeline создаёт три CSV и `snapshot.json` из исходных Parquet; FastAPI и React читают один live snapshot. Четыре read-only инструмента Investigator подключены к тем же in-process service-функциям. OpenAI adapter подключён к `/api/investigate`; ranking и node profile проверены через live frontend с настоящим `gpt-5.6-luna` (см. [integration/STAGE2_CLOSURE.md](integration/STAGE2_CLOSURE.md)). Для живого вызова нужен `OPENAI_API_KEY`. Без ключа возвращается `status=unavailable`, основной экран работает.
+**Финальный пакет:** [проверки](integration/FINAL_GATE.md), [демо на 5 минут и восстановление](docs/DEMO.md), [CSV и резервный комплект](submission/). После установки зависимостей и сборки UI одна команда: `python scripts/demo.py --no-ai`.
 
-Предыдущий checkpoint `fbfe5e0` проверил CSV за 2,947 с на Python 3.12.10. Текущий запуск дополнительно сохраняет JSON snapshot; команды и новое измерение приведены ниже.
+**Текущий статус:** pipeline создаёт три CSV и `snapshot.json` из исходных Parquet; FastAPI и React читают один live snapshot. Четыре read-only инструмента Investigator подключены к тем же in-process service-функциям. OpenAI adapter подключён к `/api/investigate`; ranking и node profile проверены через live frontend с настоящим `gpt-5.6-luna` (см. [integration/FINAL_GATE.md](integration/FINAL_GATE.md)). Для живого вызова нужен `OPENAI_API_KEY`. Без ключа возвращается `status=unavailable`, основной экран работает.
+
+Финальная проверка: 52 Python-теста, production build и два реальных browser-вопроса Investigator прошли. Pipeline без ключа: 3,339 / 3,073 с; чистый Git checkout: 3,250 с, все CSV и snapshot побайтово совпадают. Команды, ограничения и резервное восстановление приведены ниже.
 
 ## С чего начать команде
 
@@ -42,7 +44,7 @@ python analysis/audit_dataset.py
 
 Результат: `analysis/dataset_audit.json` и `analysis/node_metrics.csv`. Это метрики для review, а не требуемые кейсом финальные роли и приоритеты. Методика и ограничения — в `analysis/README.md`.
 
-## Результаты и незакрытые требования
+## Результаты и ограничения проверки
 
 - **Работает:** `nodes_roles.csv` с 2248 строками; `clusters.csv` с 105 кластерами; `top_nodes.csv` с ранжированием и причинами. Пересчёт по трём Parquet занимает менее 5 минут и не требует API key.
 - **Работает:** единый JSON snapshot, FastAPI, live-экран с поиском любого gid, направленным графом и карточкой.
@@ -54,7 +56,20 @@ python analysis/audit_dataset.py
 
 Выборка охватывает внутрибанковские переводы ≥5000 KZT за июль 2026, собранные исходящим обходом до 4 колен от 81 seed. Входящая сторона неполна; глубина 4 обрезана; нет остатков, атрибутов клиентов и размеченных ролей. Все выводы — гипотезы для проверки, score — эвристика, а не вероятность виновности. GID в браузерных/API контрактах передавать строками.
 
-Фактические правила v0, нормализация и ограничения описаны в `pipeline/README.md` и `pipeline/config.py`; смысловое обоснование и план масштабирования до ~1 млн узлов — в `docs/BUILD_BRIEF.md`.
+Пороги основной роли v0 (проверяются до сравнения score):
+
+| Роль | Допуск | Множитель q |
+|---|---|---|
+| consolidator | ≥3 разных отправителей | 0.85 |
+| distributor | ≥10 разных получателей | 0.85 |
+| transit | вход/выход >0; ≥2 операций с каждой стороны; out/in 0.8..1.2; не seed; depth<4 | 0.60 |
+| terminal | не seed; depth<4; вход>0; out/in≤0.1; вход ≥2 дат; последний вход ≤29 июля | 0.50 |
+| coordinator | вход/выход degree>0; достижим от ≥2 seed; betweenness≥q90 положительных; межкластерный объём≥20% | 0.55 |
+| peripheral | ни одна роль не допущена | score 0.15; изолят 0.05 |
+
+Для допустимых ролей `role_score=signal*q`, максимум выбирает основную роль; tie order: consolidator, distributor, transit, terminal, coordinator. При единственной операции cap=0.40. Остальные допустимые роли сохраняются как secondary. Positive midrank вычисляется по всем положительным значениям признака в snapshot: `(count(<x)+0.5*count(=x))/N`; нули →0, единственное положительное →0.5. Веса priority: 0.175 прямые seed-отправители + 0.175 достижимость от seed + 0.25 входящая степень + 0.20 объём + 0.10 betweenness + 0.10 исходящая степень (все признаки нормализованы). Это эвристика, не измеренная вероятность.
+
+Фактические формулы сигналов v0, нормализация и ограничения описаны в `pipeline/README.md` и `pipeline/config.py`; смысловое обоснование и план масштабирования до ~1 млн узлов — в `docs/BUILD_BRIEF.md`.
 
 ## 1. Контекст задачи и границы продукта
 
@@ -229,7 +244,7 @@ Pipeline работает batch-режимом. API загружает гото�
 | `codex/backend` | Даулет | `pipeline/`, `backend/`, runtime-схемы | Пересчёт, три валидных CSV, snapshot и API |
 | `codex/agent` | Нурасыл | `agent/`, методология и AI | Зафиксированные правила/evidence, затем один Investigator |
 
-`main` содержит объединённые `codex/backend` и `codex/agent` по состоянию на commit `fbfe5e0`. Работу Аки из `codex/frontend` нужно интегрировать после появления backend API; её fixture-экран не является экраном исходных Parquet.
+Финальный submission checkout содержит интегрированные pipeline, API, React и Investigator; текущие проверки — в `integration/FINAL_GATE.md`.
 
 На собственном клоне участник переключается командой, соответствующей своей роли:
 
@@ -251,7 +266,7 @@ Windows PowerShell:
 
 ```powershell
 python -m venv .venv
-.\.venv\Scripts\python.exe -m pip install -r backend/requirements.txt
+.\.venv\Scripts\python.exe -m pip install -r requirements-lock.txt
 .\.venv\Scripts\python.exe -m pipeline --data 'case/data (1)/data' --out pipeline/out
 cd frontend
 npm.cmd ci
@@ -264,7 +279,7 @@ macOS/Linux:
 
 ```bash
 python3 -m venv .venv
-.venv/bin/python -m pip install -r backend/requirements.txt
+.venv/bin/python -m pip install -r requirements-lock.txt
 .venv/bin/python -m pipeline --data 'case/data (1)/data' --out pipeline/out
 cd frontend && npm ci && npm run build && cd ..
 .venv/bin/python -m uvicorn backend.app:app --host 127.0.0.1 --port 8000
@@ -288,11 +303,13 @@ export OPENAI_MODEL='gpt-5.6-luna'
 
 После изменения переменных окружения перезапустите сервер. AI-операция имеет общий deadline 30 секунд; при отсутствии ключа `/api/investigate` возвращает `status=unavailable` по contract v1.
 
-Открыть `http://127.0.0.1:8000`. Выходы: `pipeline/out/nodes_roles.csv`, `clusters.csv`, `top_nodes.csv`, `snapshot.json`. Проверено на Windows с Python 3.14.7: 2248 узлов, 19 изолятов, 105 кластеров, полный pipeline со snapshot за 3.211 с; повтор за 2.998 с дал побайтово одинаковые четыре файла. macOS/Linux пока не проверены.
+После установки и сборки можно запускать весь путь одной командой: `.\.venv\Scripts\python.exe scripts/demo.py --no-ai` (macOS/Linux: `.venv/bin/python scripts/demo.py --no-ai`). Launcher пересчитывает исходные Parquet без ключа, затем запускает API и собранный UI; при ошибке pipeline сервер не стартует. `--skip-pipeline` использует существующий проверенный snapshot; `--env-file .env` явно читает только OPENAI_API_KEY/OPENAI_MODEL из локального файла, а `--no-ai` всегда отключает AI.
+
+Открыть `http://127.0.0.1:8000`. Выходы: `pipeline/out/nodes_roles.csv`, `clusters.csv`, `top_nodes.csv`, `snapshot.json`. Проверено на Windows с Python 3.14.7: 2248 узлов, 19 изолятов, 105 кластеров, полный pipeline со snapshot за 3.339 с; повтор за 3.073 с дал побайтово одинаковые четыре файла. macOS/Linux пока не проверены.
 
 Проверка: `.\.venv\Scripts\python.exe -m unittest pipeline.test_pipeline -v`, `.\.venv\Scripts\python.exe -m unittest discover -s agent -p 'test_*.py' -v`, `.\.venv\Scripts\python.exe -m unittest discover -s integration -p 'test_*.py' -v`, `npm.cmd run build` в `frontend/`. Для учебного UI отдельно задать `VITE_DATA_PROVIDER=fixture`; его scores синтетические.
 
-Канонический адаптер `agent/openai_model.py` создаётся backend на время запроса и закрывается после него. `.env.example` описывает настройки; `.env` автоматически не загружается. Для сетевого API smoke: `python -m agent.live_smoke --scenario all`. Текущий итог интеграции и browser gate — в `integration/STAGE2_CLOSURE.md`. API/CSV/UI работают при отсутствии ключа.
+Канонический адаптер `agent/openai_model.py` создаётся backend на время запроса и закрывается после него. `.env.example` описывает настройки; обычный `uvicorn` не загружает `.env`; launcher читает его только с явным `--env-file`. Для сетевого API smoke: `python -m agent.live_smoke --scenario all`. Текущий итог интеграции и browser gate — в `integration/FINAL_GATE.md`. API/CSV/UI работают при отсутствии ключа.
 
 ## 12. Приоритеты и контроль времени
 
@@ -313,7 +330,7 @@ export OPENAI_MODEL='gpt-5.6-luna'
 - [x] Depth=4 не получает terminal; ограничения данных указаны.
 - [x] Один запуск создаёт три CSV за <5 минут без LLM key и ручных шагов.
 - [x] Повторный запуск с теми же данными/config даёт те же аналитические CSV.
-- [x] Произвольный gid, изолят и depth=4 найдены в live UI; небольшая компонента отдельно не проверялась.
+- [x] Произвольный gid, изолят, depth=4 и узел другой weak component найдены в live UI.
 - [x] AI unavailable не ломает основной экран; обработка model failure покрыта agent-тестом.
 - [x] README содержит проверенные команды для CSV, snapshot, API и UI.
 - [ ] Запуск на втором ноутбуке/macOS подтверждён.

@@ -92,6 +92,8 @@ class OpenAIModelTests(unittest.TestCase):
         self.assertNotIn("OPENAI_API_KEY", final_input)
 
     def test_ranking_fetches_actual_profile_for_evidence(self):
+        self.request["question"] = "Какие узлы наиболее приоритетны для проверки?"
+        self.request["selected_gids"] = []
         fake = FakeResponses("rank_entities", {"role": None, "cluster_id": None, "limit": 1})
         result = self.run_question(fake)
         self.assertEqual(result["status"], "completed")
@@ -145,6 +147,21 @@ class OpenAIModelTests(unittest.TestCase):
                 self.assertEqual(result["evidence"], [])
         numeric = self.run_question(FakeResponses(text="Вероятность преступления 87%."))
         self.assertEqual(numeric["status"], "failed")
+
+    def test_priority_claim_requires_priority_evidence_in_supported_languages(self):
+        # The fixture profile only supplies a raw in_degree fact, not a
+        # priority component. Neither language may promote it to priority.
+        for text in (
+            "This node has high priority.",
+            "This node should be prioritized for review.",
+            "Узел имеет высокий приоритет проверки.",
+        ):
+            with self.subTest(text=text):
+                result = self.run_question(FakeResponses(text=text))
+                self.assertEqual(result["status"], "failed")
+                self.assertEqual(result["findings"], [])
+                self.assertEqual(result["evidence"], [])
+                self.assertEqual(result["tool_calls"][0]["status"], "completed")
 
     def test_tool_call_preserves_leading_zero_gid(self):
         fake = FakeResponses(arguments={"gid": "001234"})
